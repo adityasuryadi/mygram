@@ -1,0 +1,8 @@
+time="2023-03-13T13:55:43Z" level=error msg="cannot parse `host= user= password=xxxxx dbname= port= sslmode=disable TimeZone=UTC`: invalid port (strconv.ParseUint: parsing \"sslmode=disable\": invalid syntax)"
+time="2023-03-13T13:55:43Z" level=error msg="cannot parse `host= user= password=xxxxx dbname= port= sslmode=disable TimeZone=UTC`: invalid port (strconv.ParseUint: parsing \"sslmode=disable\": invalid syntax)"
+time="2023-03-13T14:07:49Z" level=error msg="cannot parse `host= user= password=xxxxx dbname= port= sslmode=disable TimeZone=UTC`: invalid port (strconv.ParseUint: parsing \"sslmode=disable\": invalid syntax)"
+time="2023-03-15T10:40:10Z" level=error msg="ERROR: column \"deleted_at\" of relation \"user\" does not exist (SQLSTATE 42703)"
+time="2023-03-15T14:26:15Z" level=error msg="ERROR: column \"deleted_at\" of relation \"user\" does not exist (SQLSTATE 42703)"
+time="2023-03-15T14:31:14Z" level=error msg="duplicated key not allowed"
+time="2023-03-15T14:33:57Z" level=error msg="duplicated key not allowed"
+time="2023-03-15T15:15:23Z" level=error msg="duplicated key not allowed"

@@ -1,0 +1,64 @@
+version: "3.9"
+services:
+  ### ===================
+  ### APP SERVICE
+  ### ===================
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: go_service
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    # depends_on:
+    #   - mongo
+    volumes:
+      - ./:/app/
+    networks:
+      - blog_network
+
+###=======================
+### POSTGRES SERVICE
+###======================
+  postgres:
+    build:
+      dockerfile: postgres.Dockerfile
+      context: .
+    container_name: postgres_service
+    ports:
+      - ${DB_PORT}:5432
+    networks:
+      - blog_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+### ===================
+### SWAGGER SERVICE
+### ===================
+  doc:
+    build: 
+      context: .
+      dockerfile: swagger.Dockerfile
+    container_name: swagger_service
+    environment:
+      - URL=http://localhost:9090/API-SPEC.json
+      - SWAGGER_JSON=/API-SPEC.json
+    volumes:
+      - ./API-SPEC.json:/API-SPEC.json
+    ports:
+      - ${SWAGGER_PORT}:8080
+    networks:
+      - blog_network
+
+networks:
+  blog_network:
+    driver: bridge
+    external:
+      true
+volumes:
+  pgdata:
+    
+
+      
