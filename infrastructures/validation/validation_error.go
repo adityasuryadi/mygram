@@ -27,6 +27,8 @@ func GetErrorMsg(fe validator.FieldError) string {
 		return "format email salah"
 	case "unique":
 		return "data exist"
+	case "min":
+		return "minimal "+ fe.Param() + " karakter"
 	}
 	return "Unknown error"
 }

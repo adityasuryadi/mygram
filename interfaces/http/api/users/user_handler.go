@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	domains "mygram/domains/user"
 	"mygram/infrastructures/validation"
 
@@ -26,18 +27,20 @@ type UserHandler struct {
 func (handler UserHandler) Route(app *fiber.App){
 	app.Get("test",handler.GetUser)
 	app.Post("register",handler.Register)
+	app.Post("login",handler.Login)
 }
 
 func (handler UserHandler) GetUser(ctx *fiber.Ctx) error {
 	return ctx.SendString("ini test")
 }
 
+/*
+REGISTER HANDLER
+*/
 func (handler UserHandler) Register(ctx *fiber.Ctx)error{
-	// var validator *validator.Validate
 	var request userModel.RegisterUserRequest
 	validate := handler.validate
 	ctx.BodyParser(&request)
-	// // Register the unique validation function
 	err := validate.Struct(&request)
 	
 	if err != nil {
@@ -59,5 +62,57 @@ func (handler UserHandler) Register(ctx *fiber.Ctx)error{
 
 	handler.UserUsecase.RegisterUser(request)
 	model.SuccessResponse(ctx,"SUCCESS CREATE DATA",nil)
+	return nil
+}
+
+/* 
+Login Handler
+*/
+
+func (handler UserHandler) Login(ctx *fiber.Ctx) error {
+	var request userModel.LoginUserRequest
+	validate := handler.validate
+	ctx.BodyParser(&request)
+	err := validate.Struct(&request)
+
+	if err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+
+		out := make([]validation.ErrorMessage, len(validationErrors))
+		for i, fieldError := range validationErrors {
+			out[i] = validation.ErrorMessage{fieldError.Field(), validation.GetErrorMsg(fieldError)}
+		}
+		return ctx.
+			Status(fiber.StatusBadRequest).
+			JSON(model.WebResponse{
+				Code:   fiber.StatusBadRequest,
+				Message: "FAILED TO CREATE DATA",
+				Status: "BAD_REQUEST",
+				Data:   out,
+			})
+	}
+
+	token,errorCode := handler.UserUsecase.FetchUserLogin(request)
+	fmt.Println(errorCode)
+	if errorCode == "404" {
+		model.NotFoundResponse(ctx,"USER NOT FOUND",nil)
+		return nil
+	}
+	
+	if errorCode == "400" {
+		model.BadRequestResponse(ctx,"WRONG EMAIL OR PASSWORD",nil)
+		return nil
+	}
+
+	if errorCode == "500" {
+		model.InternalServerErrorResponse(ctx,"SERVER FAILURE",nil)
+		return nil
+	}
+
+	if errorCode == "200" {
+		model.SuccessResponse(ctx,"SUCCESS LOGIN",model.LoginResponse{Token: token})
+		return nil
+	}
+
 	return nil
 }

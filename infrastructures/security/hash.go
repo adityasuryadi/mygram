@@ -1,4 +1,4 @@
-package hash
+package security
 
 import (
 	"mygram/commons/exceptions"
@@ -12,4 +12,11 @@ func GetHash(pwd []byte) string {
 		exceptions.PanicIfNeeded(err)
 	}
 	return string(hash)
+}
+
+func ComparePassword(hashPassword, password string) error {
+	pw := []byte(password)
+	hw := []byte(hashPassword)
+	err := bcrypt.CompareHashAndPassword(hw, pw)
+	return err
 }

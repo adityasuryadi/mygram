@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	domains "mygram/domains/user"
 	entities "mygram/domains/user/entity"
 
@@ -27,6 +28,11 @@ func (repository *UserRepositoryImpl) Insert(user entities.User) error{
 }
 
 // GetUserByEmail implements domains.UserRepository
-func (repository *UserRepositoryImpl) GetUserByEmail() {
-	panic("unimplemented")
+func (repository *UserRepositoryImpl) GetUserByEmail(email string) (entities.User,error) {
+	var userEntity entities.User
+	err := repository.db.Where("email",email).First(&userEntity).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entities.User{},err
+	}
+	return userEntity,nil	
 }

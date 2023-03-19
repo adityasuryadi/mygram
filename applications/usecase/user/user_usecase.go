@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"fmt"
 	"mygram/commons/exceptions"
 	domains "mygram/domains/user"
 	userEntities "mygram/domains/user/entity"
 	"mygram/domains/user/model"
-	hashing "mygram/infrastructures/hash"
+	"mygram/infrastructures/security"
+	"reflect"
 )
 
 func NewUserUseCase(repository domains.UserRepository) domains.UserUsecase {
@@ -23,7 +25,7 @@ func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) 
 	user := userEntities.User{
 		UserName:  request.Username,
 		Email:     request.Email,
-		Password:  hashing.GetHash([]byte(request.Password)),
+		Password:  security.GetHash([]byte(request.Password)),
 		Age:       request.Age,
 	}
 	err:=usecase.repository.Insert(user)
@@ -32,6 +34,27 @@ func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) 
 	}
 }
 
-func (usecase *UserUseCaseImpl) FetchUserLogin() {
-	panic("implement me")
+func (usecase *UserUseCaseImpl) FetchUserLogin(request model.LoginUserRequest) (string,string) {
+	email := request.Email
+	result,err := usecase.repository.GetUserByEmail(email)
+	
+	errorCode := make(chan string, 1)
+	var token string
+	token = ""
+	if reflect.ValueOf(result).IsZero() {
+		fmt.Println(err)
+		errorCode <- "404"
+	}
+	
+	if !reflect.ValueOf(result).IsZero() {
+		hashPassword := result.Password
+		err = security.ComparePassword(hashPassword, request.Password)
+		if err != nil {
+			errorCode <- "400"
+		}else{
+			token,_ = security.ClaimToken(email)
+			errorCode <- "200"
+		}
+	}	
+	return token, <-errorCode
 }
