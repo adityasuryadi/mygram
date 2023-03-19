@@ -4,6 +4,7 @@ import (
 	"fmt"
 	domains "mygram/domains/user"
 	"mygram/infrastructures/validation"
+	"mygram/interfaces/http/api/middleware"
 
 	"mygram/domains/user/model"
 	userModel "mygram/domains/user/model"
@@ -25,9 +26,10 @@ type UserHandler struct {
 }
 
 func (handler UserHandler) Route(app *fiber.App){
-	app.Get("test",handler.GetUser)
 	app.Post("register",handler.Register)
 	app.Post("login",handler.Login)
+	app.Use(middleware.Verify())
+	app.Get("test",handler.GetUser)
 }
 
 func (handler UserHandler) GetUser(ctx *fiber.Ctx) error {
