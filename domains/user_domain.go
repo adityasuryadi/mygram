@@ -1,8 +1,8 @@
 package domains
 
 import (
-	entities "mygram/domains/user/entity"
-	"mygram/domains/user/model"
+	entities "mygram/domains/entity"
+	"mygram/domains/model"
 )
 
 // Repository contract

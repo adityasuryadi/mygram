@@ -3,9 +3,9 @@ package usecase
 import (
 	"fmt"
 	"mygram/commons/exceptions"
-	domains "mygram/domains/user"
-	userEntities "mygram/domains/user/entity"
-	"mygram/domains/user/model"
+	domains "mygram/domains"
+	userEntities "mygram/domains/entity"
+	"mygram/domains/model"
 	"mygram/infrastructures/security"
 	"reflect"
 )

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"mygram/domains/user/model"
+	"mygram/domains/model"
 
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
@@ -24,7 +24,8 @@ func jwtError(c *fiber.Ctx, err error) error {
 		return c.Status(fiber.StatusBadRequest).JSON(model.WebResponse{
 			Code:   fiber.StatusBadRequest,
 			Status: "BAD_REQUEST",
-			Data:   err.Error(),
+			Message:   err.Error(),
+			Data: nil,
 		})
 	}
 
@@ -32,6 +33,7 @@ func jwtError(c *fiber.Ctx, err error) error {
 	return c.Status(fiber.StatusUnauthorized).JSON(model.WebResponse{
 		Code:   fiber.StatusUnauthorized,
 		Status: "UNAUTHORIZE",
-		Data:   err.Error(),
+		Message: "UNAUTHORIZE",
+		Data:   nil,
 	})
 }

@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	domains "mygram/domains/user"
-	entities "mygram/domains/user/entity"
+	domains "mygram/domains"
+	entities "mygram/domains/entity"
 
 	"gorm.io/gorm"
 )

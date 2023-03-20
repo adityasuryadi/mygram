@@ -2,12 +2,12 @@ package handler
 
 import (
 	"fmt"
-	domains "mygram/domains/user"
+	domains "mygram/domains"
 	"mygram/infrastructures/validation"
 	"mygram/interfaces/http/api/middleware"
 
-	"mygram/domains/user/model"
-	userModel "mygram/domains/user/model"
+	"mygram/domains/model"
+	userModel "mygram/domains/model"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

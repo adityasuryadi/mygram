@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	photoUsecase "mygram/applications/usecase/photo"
 	usecase "mygram/applications/usecase/user"
 	config "mygram/infrastructures"
 	dbConfig "mygram/infrastructures/database"
@@ -17,10 +18,17 @@ func main() {
 	configApp := config.New()
 	db:=dbConfig.NewPostgresDB(configApp)
 	validate:=validation.NewValidation(db)
+	
+	// user
 	userRepository:=repository.NewUserRepositoryPostgres(db)
 	userUsecase:=usecase.NewUserUseCase(userRepository)
 	userHandler:=handler.NewUserHandler(userUsecase,*validate)
 	userHandler.Route(app)
+
+	// photo
+	photoRepository := repository.NewPhotoRepository(db)
+	photoUsecase := photoUsecase.NewPhotoUsecase(photoRepository)
+	PhotoHandler := 
 	
 	
 	app.Get("/", func(c *fiber.Ctx) error {
