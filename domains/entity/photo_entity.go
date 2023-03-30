@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Photo struct {
@@ -15,4 +16,19 @@ type Photo struct {
 	User User `gorm:"foreignKey:UserId"`;
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
+}
+
+func (Photo) TableName() string {
+	return "photo"
+}
+
+func (entity *Photo) BeforeCreate(db *gorm.DB) error {
+	entity.Id = uuid.New()
+	entity.CreatedAt = time.Now().Local()
+	return nil
+}
+
+func (entity *Photo) BeforeUpdate(db *gorm.DB) error {
+	entity.UpdatedAt = time.Now().Local()
+	return nil
 }

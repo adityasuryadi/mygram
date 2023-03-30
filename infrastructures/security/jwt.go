@@ -3,7 +3,7 @@ package security
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func ClaimToken(email string) (string, error) {
@@ -23,8 +23,7 @@ func ClaimToken(email string) (string, error) {
 	return t, nil
 }
 
-func DecodeToken() (jwt.MapClaims, bool) {
-	var token *jwt.Token
+func DecodeToken(token *jwt.Token) (jwt.MapClaims, bool) {
 	claims, err := token.Claims.(jwt.MapClaims)
 	if err {
 		return nil, true

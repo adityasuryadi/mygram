@@ -1,4 +1,4 @@
-package fiber
+package fiberconfig
 
 import (
 	"mygram/commons/exceptions"

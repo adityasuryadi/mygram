@@ -1,20 +1,19 @@
 package main
 
 import (
-	"fmt"
-	photoUsecase "mygram/applications/usecase/photo"
-	usecase "mygram/applications/usecase/user"
+	usecase "mygram/applications/usecase"
+	"mygram/commons/exceptions"
 	config "mygram/infrastructures"
 	dbConfig "mygram/infrastructures/database"
 	repository "mygram/infrastructures/repository/postgres"
 	"mygram/infrastructures/validation"
-	handler "mygram/interfaces/http/api/users"
+	handler "mygram/interfaces/http/api"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
 	configApp := config.New()
 	db:=dbConfig.NewPostgresDB(configApp)
 	validate:=validation.NewValidation(db)
@@ -27,24 +26,14 @@ func main() {
 
 	// photo
 	photoRepository := repository.NewPhotoRepository(db)
-	photoUsecase := photoUsecase.NewPhotoUsecase(photoRepository)
-	PhotoHandler := 
-	
-	
-	app.Get("/", func(c *fiber.Ctx) error {
-		var total int64
-		err := db.Table("user").Where("email = ?","adit@mail.com").Count(&total).Error
-		// err := db.Raw("SELECT count(id) from user where email = adit@mail.com").Scan(&total)
-		fmt.Println(total)
-		if err != nil {
-			fmt.Println(err)
-		}
-		return c.SendString("Hello, Aditya s!")
-	})
+	photoUsecase := usecase.NewPhotoUsecase(photoRepository,userRepository)
+	photoHandler := handler.NewPhotoHandler(photoUsecase,*validate)
+	photoHandler.Route(app)
 
+	app.Use(func(c *fiber.Ctx) error {
+		return c.SendStatus(404) // => 404 "Not Found"
+	})
+	
 	// Start App
 	app.Listen(":5000")
-	// if err != nil {
-	// 	panic(err)
-	// }
 }
