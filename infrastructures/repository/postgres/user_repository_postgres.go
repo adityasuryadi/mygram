@@ -19,7 +19,7 @@ type UserRepositoryImpl struct {
 }
 
 // Insert implements domains.UserRepository
-func (repository *UserRepositoryImpl) Insert(user entities.User) error{
+func (repository *UserRepositoryImpl) Insert(user *entities.User) error{
 	result := repository.db.Create(&user)
 	if result.Error != nil {
 		return result.Error

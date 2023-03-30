@@ -1,11 +1,13 @@
 package postgresql_repository_test
 
 import (
+	"database/sql/driver"
 	"fmt"
 	entities "mygram/domains/entity"
 	repository "mygram/infrastructures/repository/postgres"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
@@ -14,35 +16,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// var categoryRepository = &repository.CategoryRepositoryMock{Mock: mock.Mock{}}
-// var categoryService = CategoryService{Repository: categoryRepository}
+type AnyTime struct{}
 
-// var userRepository = repository.UserRepositoryImpl
+func (a AnyTime) Match(v driver.Value) bool {
+	_, ok := v.(time.Time)
+	return ok
+}
 
-// func TestCategoryService_GetNotFound(t *testing.T) {
-// 	categoryRepository.Mock.On("FindById", "1").Return(nil)
-// 	category, err := categoryService.Get("1")
-// 	assert.Nil(t, category)
-// 	assert.NotNil(t, err)
-// }
-
-// func TestCategoryService_GetSuccess(t *testing.T) {
-// 	category := entity.Category{
-// 		Id:   "1",
-// 		Name: "Laptop",
-// 	}
-// 	categoryRepository.Mock.On("FindById", "2").Return(category)
-// 	result, err := categoryService.Get("2")
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, result)
-// 	assert.Equal(t, category.Id, result.Id)
-// 	assert.Equal(t, category.Name, result.Name)
-// }
 
 func TestUserRepository_SuccessGetUserByEmail(t *testing.T){
-	// var userRepositoryMock = &mock_repository.UserRepositoryMock{
-	// 	Mock: mock.Mock{},
-	// }
+
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		// t.Fatal("error creating mock database: %v",err)
@@ -66,25 +49,21 @@ func TestUserRepository_SuccessGetUserByEmail(t *testing.T){
 	}
 
 	userRepository := repository.NewUserRepositoryPostgres(gormDB)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "user" WHERE "email" = $1 ORDER BY "user"."id" LIMIT 1`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "user" WHERE "email" = $1 ORDER BY "user"."id" LIMIT 1`)). //parsing the string as regex and requires escape characters gunakan QuoteMeta
 	WithArgs("adit@mail.com").
 	WillReturnRows(sqlmock.
 		NewRows([]string{"id","username","email","age","password"}).
 		AddRow(user.Id.String(),user.UserName,user.Email,user.Age,user.Password),
 	)
-	// userRepositoryMock.Mock.On("GetUserByEmail","1").Return(user)
 	result,err:=userRepository.GetUserByEmail("adit@mail.com")
 	assert.NotNil(t,result)
 	assert.Nil(t,err)
 }
 
 func TestUserRepository_NotFoundGetUserByEmail(t *testing.T){
-	// var userRepositoryMock = &mock_repository.UserRepositoryMock{
-	// 	Mock: mock.Mock{},
-	// }
+	
 	db, mock, err := sqlmock.New()
 	if err != nil {
-		// t.Fatal("error creating mock database: %v",err)
 		fmt.Println(err)
 	}
 
@@ -97,12 +76,76 @@ func TestUserRepository_NotFoundGetUserByEmail(t *testing.T){
     }
 
 	userRepository := repository.NewUserRepositoryPostgres(gormDB)
+	// HANDLE ROW NOT FOUND
+
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "user" WHERE "email" = $1 ORDER BY "user"."id" LIMIT 1`)).
 	WithArgs("adit@mail.com").
 	WillReturnRows(sqlmock.
-		NewRows([]string{"id"}),
+		NewRows([]string{"id"}), // guanakan fungsi ini
 	)
 	result,err:=userRepository.GetUserByEmail("adit@mail.com")
 	assert.Nil(t,result)
 	assert.NotNil(t,err)
+}
+
+/*
+Test Insert User
+
+*/
+
+func TestUserRepository_InsertSuccess(t *testing.T){
+	// var (
+	// 	id = uuid.New()
+	// 	username ="adit"
+	// 	password = "12345"
+	// 	email = "aditya@mail.com"
+	// 	age = 25
+	// 	createdAt = time.Now()
+	// 	updatedAt = time.Now()
+	// )
+	// var user entities.User
+
+	user:= &entities.User{
+		Id:        uuid.New(),
+		UserName:  "adit",
+		Email:     "aditya@mail.com",
+		Password:  "12345",
+		Age:       26,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	db,mock,err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	gormDB,err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}),&gorm.Config{})
+
+	if err != nil {
+        t.Fatalf("error opening GORM database: %v", err)
+    }
+
+	userRepository := repository.NewUserRepositoryPostgres(gormDB)
+	// query := "INSERT INTO USER (id,username,password,email,age,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7)"
+	query := `INSERT INTO "user" ("id","username","email","password","age","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7)`
+	// query := `INSERT INTO "user" \("id","username","email","password","age","created_at","updated_at"\) VALUES\(\$1,\$2,\$3,\$4,\$5,\$6,\$7\)`
+	// mock.ExpectBegin()
+	// mock.ExpectQuery(regexp.QuoteMeta(query)).
+	// // WithArgs(id,username,password,email,age,createdAt,updatedAt).
+	// WithArgs(user.Id.String(),user.UserName,user.Email,user.Password,user.Age,user.CreatedAt,user.UpdatedAt).
+	// WillReturnRows(
+	// 	sqlmock.NewRows([]string{"id"}),
+	// )
+	// mock.ExpectCommit()
+	mock.ExpectBegin()
+	// prep := mock.ExpectPrepare(regexp.QuoteMeta(query))
+	mock.ExpectExec(regexp.QuoteMeta(query)).
+	// WithArgs(id,username,password,email,age,createdAt,updatedAt).
+	WithArgs(&user.Id,user.UserName,user.Email,user.Password,user.Age,AnyTime{},AnyTime{}).
+	WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectCommit()
+	err = userRepository.Insert(user)
+	assert.Nil(t,err)
 }

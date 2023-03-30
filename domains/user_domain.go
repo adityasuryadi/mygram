@@ -9,7 +9,7 @@ import (
 
 type UserRepository interface {
 	GetUserByEmail(email string) (*entities.User,error) 
-	Insert(user entities.User) error
+	Insert(user *entities.User) error
 }
 
 // Service contract
