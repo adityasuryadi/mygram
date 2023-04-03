@@ -21,3 +21,28 @@ type CreatePhotoResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type PhotoResponse struct {
+	Id uuid.UUID `json:"id"`
+	PhotoUrl string `json:"photo_url"`
+	Caption string `json:"caption"`
+	Title string `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UpdatePhotoRequest struct {
+	Title    string `json:"title" validate:"required"`
+	PhotoUrl string `json:"photo_url" validate:"required"`
+	Caption  string `json:"caption"`
+	Email string
+}
+
+type UpdatePhotoResponse struct {
+	Id uuid.UUID `json:"id"`
+	PhotoUrl string `json:"photo_url"`
+	Caption string `json:"caption"`
+	Title string `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}

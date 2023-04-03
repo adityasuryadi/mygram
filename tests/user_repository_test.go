@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB() *gorm.DB{
+func initDB() *gorm.DB{
 	db:=dbConfig.NewTestPostgresDB()
 	return db	
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	db:= InitDB()
+	db:= initDB()
 	email := "aditsss@mail.com"
 	userRepository := repository.NewUserRepositoryPostgres(db)
 	user,err := userRepository.GetUserByEmail(email)

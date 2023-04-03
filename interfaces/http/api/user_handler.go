@@ -8,8 +8,6 @@ import (
 	"mygram/domains/model"
 	userModel "mygram/domains/model"
 
-	"model"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
@@ -83,6 +81,18 @@ func (handler UserHandler) Register(ctx *fiber.Ctx)error{
 Login Handler
 */
 
+
+// LoginuserLogin User
+// @Summary Login user
+// @Description Login user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body userModel.LoginUserRequest true "Login user"
+// @Success 200 {object} model.WebResponse{}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /login [post]
 func (handler UserHandler) Login(ctx *fiber.Ctx) error {
 	var request userModel.LoginUserRequest
 	validate := handler.validate

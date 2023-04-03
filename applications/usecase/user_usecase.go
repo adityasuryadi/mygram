@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	"mygram/commons/exceptions"
 	domains "mygram/domains"
 	userEntities "mygram/domains/entity"
 	"mygram/domains/model"
@@ -21,17 +20,19 @@ type UserUseCaseImpl struct {
 }
 
 // RegisterUser implements domains.UserUsecase
-func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) {
-	user := userEntities.User{
+func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) (errorCode string) {
+	user := &userEntities.User{
 		UserName:  request.Username,
 		Email:     request.Email,
 		Password:  security.GetHash([]byte(request.Password)),
+		// Password: request.Password,
 		Age:       request.Age,
 	}
 	err:=usecase.repository.Insert(user)
 	if err != nil {
-		exceptions.PanicIfNeeded(err)
+		return "500"
 	}
+	return "200"
 }
 
 func (usecase *UserUseCaseImpl) FetchUserLogin(request model.LoginUserRequest) (string,string) {

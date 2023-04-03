@@ -94,17 +94,6 @@ Test Insert User
 */
 
 func TestUserRepository_InsertSuccess(t *testing.T){
-	// var (
-	// 	id = uuid.New()
-	// 	username ="adit"
-	// 	password = "12345"
-	// 	email = "aditya@mail.com"
-	// 	age = 25
-	// 	createdAt = time.Now()
-	// 	updatedAt = time.Now()
-	// )
-	// var user entities.User
-
 	user:= &entities.User{
 		Id:        uuid.New(),
 		UserName:  "adit",
@@ -148,4 +137,29 @@ func TestUserRepository_InsertSuccess(t *testing.T){
 	mock.ExpectCommit()
 	err = userRepository.Insert(user)
 	assert.Nil(t,err)
+}
+
+func TestUserRepository_InsertFailed(t *testing.T) {
+	user:= &entities.User{}
+	db,mock,err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	gormDB,err := gorm.Open(postgres.New(postgres.Config{
+		Conn: db,
+	}),&gorm.Config{})
+
+	if err != nil {
+        t.Fatalf("error opening GORM database: %v", err)
+    }
+	userRepository := repository.NewUserRepositoryPostgres(gormDB)
+	query := `INSERT INTO "user" ("id","username","email","password","age","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7)`
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta(query)).
+	WithArgs(&user.Id,user.UserName,user.Email,user.Password,user.Age,AnyTime{},AnyTime{}).
+	WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectCommit()
+	err = userRepository.Insert(user)
+	assert.NotNil(t,err)
 }
