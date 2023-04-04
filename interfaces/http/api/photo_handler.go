@@ -31,6 +31,7 @@ func (handler PhotoHandler) Route(app *fiber.App){
 	photo.Get("/",handler.ListPhoto)
 	photo.Get("/:id",handler.GetPhoto)
 	photo.Put("/:id",handler.UpdatePhoto)
+	photo.Delete("/:id",handler.DeletePhoto)
 }
 
 type MyCustomClaims struct {
@@ -168,15 +169,12 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
 	request.Email = email
-	// log.Print("ID",id)
-	// log.Print("REQUEST",request)
-	// log.Print("EMAIL",email)
 	if err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 
 		out := make([]validation.ErrorMessage,len(validationErrors))
 		for i, fieldError := range validationErrors {
-			out[i] = validation.ErrorMessage{
+			out[i] = validation.ErrorMessage{ 
 				fieldError.Field(),
 				validation.GetErrorMsg(fieldError),
 			}
@@ -184,15 +182,36 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 		model.BadRequestResponse(ctx,"CLIENT SERVER ERROR",out)
 		return nil
 	}
-	res,errCode := handler.usecase.EditPhoto(id,model.UpdatePhotoRequest(request))
+	_,errCode := handler.usecase.EditPhoto(id,model.UpdatePhotoRequest(request))
 	log.Println(errCode)
 	if errCode == "200"{
-		model.SuccessResponse(ctx,"SUCCESS GET PHOTO",res)
+		model.SuccessResponse(ctx,"SUCCESS UPDATE PHOTO",nil)
 		return nil
 	}
 
 	if errCode == "404"{
-		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",res)
+		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",nil)
+		return nil
+	}
+
+	if errCode == "500" {
+		model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
+		return nil
+	}
+
+	return nil
+}
+
+func (handler PhotoHandler) DeletePhoto(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	errCode := handler.usecase.DeletePhoto(id)
+	if errCode == "200"{
+		model.SuccessResponse(ctx,"SUCCESS DELETE PHOTO",nil)
+		return nil
+	}
+
+	if errCode == "404"{
+		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",nil)
 		return nil
 	}
 

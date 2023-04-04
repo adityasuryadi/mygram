@@ -11,7 +11,7 @@ type PhotoRepository interface {
 	GetAll() ([]*entities.Photo,error)
 	FindById(id string)(*entities.Photo,error)
 	UpdatePhoto(id string,photo entities.Photo) error
-	// DestroyPhoto()
+	DestroyPhoto(id string) error
 }
 
 // service contract
@@ -20,4 +20,5 @@ type PhotoUsecase interface {
 	FindAll() ([]model.PhotoResponse,string)
 	GetPhotoById(id string) (*model.PhotoResponse,string)
 	EditPhoto(id string,request model.UpdatePhotoRequest) (*model.UpdatePhotoResponse,string)
+	DeletePhoto(id string) (string)
 }

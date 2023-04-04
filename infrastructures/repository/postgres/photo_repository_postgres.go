@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"log"
 	"mygram/domains"
 	entities "mygram/domains/entity"
 
@@ -54,10 +55,20 @@ func (repository *PhotoRepositoryImpl) FindById(id string) (*entities.Photo, err
 
 // UpdatePhoto implements domains.PhotoRepository
 func (repository *PhotoRepositoryImpl) UpdatePhoto(id string, photo entities.Photo) error {
-	err := repository.db.Debug().Save(&photo).Error
+	err := repository.db.Save(&photo).Error
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// DestroyPhoto implements domains.PhotoRepository
+func (repository *PhotoRepositoryImpl) DestroyPhoto(id string) error {	
+	err := repository.db.Where("id = ?",id).Delete(&entities.Photo{}).Error
+	if err != nil {
+		return err
+	}
+	log.Print(err)
 	return nil
 }

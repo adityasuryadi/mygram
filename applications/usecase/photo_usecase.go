@@ -121,17 +121,17 @@ func (usecase *PhotoUSecaseImpl) EditPhoto(id string, request model.UpdatePhotoR
 	errCode := make(chan string, 1)
 	var response = &model.UpdatePhotoResponse{}
 	result, err := usecase.repository.FindById(id)
-	
+
 	if result == nil && err == nil {
 		errCode <- "404"
 		response = nil
-		return response,<-errCode
+		return response, <-errCode
 	}
 
 	if err != nil && result == nil {
 		errCode <- "500"
 		response = nil
-		return response,<-errCode
+		return response, <-errCode
 	}
 
 	result.PhotoUrl = request.PhotoUrl
@@ -139,12 +139,37 @@ func (usecase *PhotoUSecaseImpl) EditPhoto(id string, request model.UpdatePhotoR
 	result.Title = request.Title
 	result.UpdatedAt = time.Now()
 
-	err = usecase.repository.UpdatePhoto(id,*result)
+	err = usecase.repository.UpdatePhoto(id, *result)
 	if err != nil {
 		errCode <- "500"
 		response = nil
-		return response,<-errCode
+		return response, <-errCode
 	}
 	errCode <- "200"
-	return response,<-errCode
+	return response, <-errCode
+}
+
+
+// DeletePhoto implements domains.PhotoUsecase
+func (usecase *PhotoUSecaseImpl) DeletePhoto(id string) string {
+	errCode := make(chan string, 1)
+	result, err := usecase.repository.FindById(id)
+
+	if result == nil && err == nil {
+		errCode <- "404"
+		return <-errCode
+	}
+
+	if err != nil && result == nil {
+		errCode <- "500"
+		return <-errCode
+	}
+
+	err = usecase.repository.DestroyPhoto(id)
+	if err != nil {
+		errCode <- "500"
+		return <-errCode
+	}
+	errCode <- "200"
+	return <- errCode
 }
