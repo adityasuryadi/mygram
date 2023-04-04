@@ -44,6 +44,20 @@ definitions:
     - password
     - username
     type: object
+  model.UpdatePhotoRequest:
+    properties:
+      caption:
+        type: string
+      email:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+    required:
+    - photo_url
+    - title
+    type: object
   model.WebResponse:
     properties:
       code:
@@ -125,6 +139,97 @@ paths:
           schema:
             type: string
       summary: List Photo
+      tags:
+      - photo
+  /photo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove book by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      summary: Remove book by ID
+      tags:
+      - photo
+  /photo/id:
+    get:
+      consumes:
+      - application/json
+      description: List Photo
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PhotoResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List Photo
+      tags:
+      - photo
+    put:
+      consumes:
+      - application/json
+      description: Edit Photo
+      parameters:
+      - description: Update photo
+        in: body
+        name: photo
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdatePhotoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PhotoResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Edit Photo
       tags:
       - photo
   /register:

@@ -170,6 +170,7 @@ func (usecase *PhotoUSecaseImpl) DeletePhoto(id string) string {
 		errCode <- "500"
 		return <-errCode
 	}
+	
 	errCode <- "200"
 	return <- errCode
 }

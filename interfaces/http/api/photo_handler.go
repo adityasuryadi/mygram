@@ -152,7 +152,7 @@ func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 // @Tags photo
 // @Accept json
 // @Produce json
-// @Param photo body models.CreatePhotoRequest true "Register book"
+// @Param photo body model.UpdatePhotoRequest true "Update photo"
 // @Success 200 {object} model.WebResponse{data=model.PhotoResponse}
 // @Failure 404 {string} model.WebResponse{code=404}
 // @Failure 500 {string} model.WebResponse{code=500}
@@ -202,6 +202,17 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 	return nil
 }
 
+// DeletePhoto function removes a photo by ID
+// @Summary Remove book by ID
+// @Description Remove book by ID
+// @Tags photo
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} model.WebResponse{}
+// @Failure 404 {object} model.WebResponse{}
+// @Failure 503 {object} model.WebResponse{}
+// @Router /photo/{id} [delete]
 func (handler PhotoHandler) DeletePhoto(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	errCode := handler.usecase.DeletePhoto(id)
