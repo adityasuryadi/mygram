@@ -3,25 +3,21 @@ package handler
 import (
 	"fmt"
 	domains "mygram/domains"
-	"mygram/infrastructures/validation"
 
 	"mygram/domains/model"
 	userModel "mygram/domains/model"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewUserHandler(usecase domains.UserUsecase,validate validator.Validate) UserHandler{
+func NewUserHandler(usecase domains.UserUsecase) UserHandler{
 	return UserHandler{
 		UserUsecase: usecase,
-		validate:    validate,
 	}
 }
 
 type UserHandler struct {
 	UserUsecase domains.UserUsecase
-	validate validator.Validate
 }
 
 func (handler UserHandler) Route(app *fiber.App){
@@ -51,26 +47,7 @@ REGISTER HANDLER
 func (handler UserHandler) Register(ctx *fiber.Ctx)error{
 	
 	var request userModel.RegisterUserRequest
-	validate := handler.validate
 	ctx.BodyParser(&request)
-	err := validate.Struct(&request)
-	
-	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-
-		out := make([]validation.ErrorMessage, len(validationErrors))
-		for i, fieldError := range validationErrors {
-			out[i] = validation.ErrorMessage{fieldError.Field(), validation.GetErrorMsg(fieldError)}
-		}
-		return ctx.
-			Status(fiber.StatusBadRequest).
-			JSON(model.WebResponse{
-				Code:   fiber.StatusBadRequest,
-				Message: "FAILED TO CREATE DATA",
-				Status: "BAD_REQUEST",
-				Data:   out,
-			})
-	}
 
 	handler.UserUsecase.RegisterUser(request)
 	model.SuccessResponse(ctx,"SUCCESS CREATE DATA",nil)
@@ -95,27 +72,8 @@ Login Handler
 // @Router /login [post]
 func (handler UserHandler) Login(ctx *fiber.Ctx) error {
 	var request userModel.LoginUserRequest
-	validate := handler.validate
 	ctx.BodyParser(&request)
-	err := validate.Struct(&request)
-
-	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-
-		out := make([]validation.ErrorMessage, len(validationErrors))
-		for i, fieldError := range validationErrors {
-			out[i] = validation.ErrorMessage{fieldError.Field(), validation.GetErrorMsg(fieldError)}
-		}
-		return ctx.
-			Status(fiber.StatusBadRequest).
-			JSON(model.WebResponse{
-				Code:   fiber.StatusBadRequest,
-				Message: "FAILED TO CREATE DATA",
-				Status: "BAD_REQUEST",
-				Data:   out,
-			})
-	}
-
+	
 	token,errorCode := handler.UserUsecase.FetchUserLogin(request)
 	fmt.Println(errorCode)
 	if errorCode == "404" {

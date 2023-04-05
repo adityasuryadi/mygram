@@ -33,20 +33,24 @@ func main() {
 	db:=dbConfig.NewPostgresDB(configApp)
 	validate:=validation.NewValidation(db)
 
-	
-	
-	
 	// user
 	userRepository:=repository.NewUserRepositoryPostgres(db)
-	userUsecase:=usecase.NewUserUseCase(userRepository)
-	userHandler:=handler.NewUserHandler(userUsecase,*validate)
+	userUsecase:=usecase.NewUserUseCase(userRepository,validate)
+	userHandler:=handler.NewUserHandler(userUsecase)
 	userHandler.Route(app)
 
 	// photo
 	photoRepository := repository.NewPhotoRepository(db)
-	photoUsecase := usecase.NewPhotoUsecase(photoRepository,userRepository)
-	photoHandler := handler.NewPhotoHandler(photoUsecase,*validate)
+	photoUsecase := usecase.NewPhotoUsecase(photoRepository,userRepository,validate)
+	photoHandler := handler.NewPhotoHandler(photoUsecase)
 	photoHandler.Route(app)
+
+	// comment
+	commentRepository := repository.NewCommentRepository(db)
+	commentUsecase := usecase.NewCommmentUsecase(commentRepository,userRepository,validate)
+	commentHandler := handler.NewCommentHandler(commentUsecase)
+	commentHandler.Route(app)
+
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {

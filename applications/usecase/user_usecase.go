@@ -6,17 +6,20 @@ import (
 	userEntities "mygram/domains/entity"
 	"mygram/domains/model"
 	"mygram/infrastructures/security"
+	"mygram/infrastructures/validation"
 	"reflect"
 )
 
-func NewUserUseCase(repository domains.UserRepository) domains.UserUsecase {
+func NewUserUseCase(repository domains.UserRepository,validate validation.Validation) domains.UserUsecase {
 	return &UserUseCaseImpl{
 		repository: repository,
+		Validate: validate,
 	}
 }
 
 type UserUseCaseImpl struct {
 	repository domains.UserRepository
+	Validate validation.Validation
 }
 
 // RegisterUser implements domains.UserUsecase

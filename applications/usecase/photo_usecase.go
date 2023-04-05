@@ -5,25 +5,34 @@ import (
 	"mygram/domains"
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
+	"mygram/infrastructures/validation"
 	"time"
 )
 
-func NewPhotoUsecase(repository domains.PhotoRepository, userRepository domains.UserRepository) domains.PhotoUsecase {
+func NewPhotoUsecase(repository domains.PhotoRepository, userRepository domains.UserRepository,validate validation.Validation) domains.PhotoUsecase {
 	return &PhotoUSecaseImpl{
 		repository:     repository,
 		UserRepository: userRepository,
+		Validate: validate,
 	}
 }
 
 type PhotoUSecaseImpl struct {
 	repository     domains.PhotoRepository
 	UserRepository domains.UserRepository
+	Validate validation.Validation
 }
 
-func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (*model.CreatePhotoResponse, string) {
+func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (interface{}, string) {
 	var response model.CreatePhotoResponse
 
 	errorCode := make(chan string, 1)
+
+	err := usecase.Validate.ValidateRequest(request)
+	if err != nil {
+		errorCode <- "400"
+		return err,<-errorCode
+	}
 
 	userResult, err := usecase.UserRepository.GetUserByEmail(request.Email)
 	fmt.Println(userResult)
@@ -57,7 +66,7 @@ func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (*
 		errorCode <- "200"
 	}
 
-	return &response, <-errorCode
+	return response, <-errorCode
 }
 
 // FindAll implements domains.PhotoUsecase
@@ -117,10 +126,18 @@ func (usecase *PhotoUSecaseImpl) GetPhotoById(id string) (*model.PhotoResponse, 
 }
 
 // EditPhoto implements domains.PhotoUsecase
-func (usecase *PhotoUSecaseImpl) EditPhoto(id string, request model.UpdatePhotoRequest) (*model.UpdatePhotoResponse, string) {
+func (usecase *PhotoUSecaseImpl) EditPhoto(id string, request model.UpdatePhotoRequest) (interface{}, string) {
 	errCode := make(chan string, 1)
 	var response = &model.UpdatePhotoResponse{}
+	
+	err := usecase.Validate.ValidateRequest(request)
+	if err != nil {
+		errCode <- "400"
+		return err,<-errCode
+	}
+	
 	result, err := usecase.repository.FindById(id)
+	
 
 	if result == nil && err == nil {
 		errCode <- "404"

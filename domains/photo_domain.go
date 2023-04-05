@@ -16,9 +16,9 @@ type PhotoRepository interface {
 
 // service contract
 type PhotoUsecase interface {
-	CreatePhoto(model.CreatePhotoRequest) (*model.CreatePhotoResponse,string)
+	CreatePhoto(model.CreatePhotoRequest) (interface{},string)
 	FindAll() ([]model.PhotoResponse,string)
 	GetPhotoById(id string) (*model.PhotoResponse,string)
-	EditPhoto(id string,request model.UpdatePhotoRequest) (*model.UpdatePhotoResponse,string)
+	EditPhoto(id string,request model.UpdatePhotoRequest) (interface{},string)
 	DeletePhoto(id string) (string)
 }

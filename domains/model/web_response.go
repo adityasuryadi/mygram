@@ -1,6 +1,8 @@
 package model
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type WebResponse struct {
 	Code   int         `json:"code"`
@@ -47,4 +49,31 @@ func BadRequestResponse(ctx *fiber.Ctx,message string , data interface{}) {
 		Data:   data,
 	}
 	ctx.Status(fiber.StatusBadRequest).JSON(response)
+}
+
+func ForbiddenResponse(ctx *fiber.Ctx,message string , data interface{}){
+	response := WebResponse{
+		Code:   fiber.StatusForbidden,
+		Status: "UNAUTHORIZE",
+		Message: message,
+		Data:   data,
+	}
+	ctx.Status(fiber.StatusBadRequest).JSON(response)
+}
+
+func GetResponse(ctx *fiber.Ctx,errorCode string,message string,data interface{}){
+	switch errorCode {
+	case "200" :
+		SuccessResponse(ctx,message,data)
+	case "400":
+		BadRequestResponse(ctx,message,data)
+	case "403":
+		ForbiddenResponse(ctx,message,data)
+	case "404" :
+		NotFoundResponse(ctx,message,data)
+	case "500" :
+		InternalServerErrorResponse(ctx,message,data)
+	default:
+		NotFoundResponse(ctx,message,data)
+	}
 }
