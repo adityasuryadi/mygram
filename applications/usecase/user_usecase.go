@@ -28,7 +28,6 @@ func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) 
 		UserName:  request.Username,
 		Email:     request.Email,
 		Password:  security.GetHash([]byte(request.Password)),
-		// Password: request.Password,
 		Age:       request.Age,
 	}
 	err:=usecase.repository.Insert(user)

@@ -21,6 +21,9 @@ type CommentHandler struct {
 func (handler CommentHandler) Route(app *fiber.App){
 	comment:=app.Group("comment",middleware.Verify())
 	comment.Post("/",handler.PostComment)
+	comment.Get("/",handler.GetAllComment)
+	comment.Get("/:id",handler.GetOneComment)
+	comment.Put("/:id",handler.UpdateComment)
 }
 
 func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
@@ -43,5 +46,35 @@ func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
 		return nil
 	}
 
+	return nil
+}
+
+func (handler CommentHandler) GetAllComment(ctx *fiber.Ctx) error {
+	result,_,errCode := handler.CommentUsecase.GetAllComment()
+	model.GetResponse(ctx,errCode,"",result)
+	return nil
+}
+
+func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	result,_,errCode := handler.CommentUsecase.GetCommentById(id)
+	model.GetResponse(ctx,errCode,"",result)
+	return nil 
+}
+
+func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	result,validation,errCode:=handler.CommentUsecase.GetCommentById(id)
+	if errCode == "400" {
+		model.GetResponse(ctx,errCode,"",validation)
+	}
+		model.GetResponse(ctx,errCode,"",result)
+		return nil	
+}
+
+func (handler CommentHandler) DeleteComment(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	errCode,_,result:=handler.CommentUsecase.DeleteComment(id)
+	model.GetResponse(ctx,errCode,"",result)
 	return nil
 }
