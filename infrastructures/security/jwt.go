@@ -23,11 +23,8 @@ func ClaimToken(email string) (string, error) {
 	return t, nil
 }
 
-func DecodeToken(token *jwt.Token) (jwt.MapClaims, bool) {
-	claims, err := token.Claims.(jwt.MapClaims)
-	if err {
-		return nil, true
-	}
-	return claims, false
+func DecodeToken(token *jwt.Token) (jwt.MapClaims) {
+	claims:= token.Claims.(jwt.MapClaims)
+	return claims
 }
 

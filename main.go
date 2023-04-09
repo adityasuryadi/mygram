@@ -51,6 +51,11 @@ func main() {
 	commentHandler := handler.NewCommentHandler(commentUsecase)
 	commentHandler.Route(app)
 
+	// social media
+	socialmediaRepository := repository.NewSocialmediaRepository(db)
+	socialmediaUsecase := usecase.NewSocialmediaUsecase(socialmediaRepository,userRepository,validate)
+	socialmediaHandler:=handler.NewSocialmediaHandler(socialmediaUsecase)
+	socialmediaHandler.Route(app)
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
