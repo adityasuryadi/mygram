@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type CreateSocialmediaRequest struct {
 	Name           string `json:"name" validate:"required"`
@@ -9,7 +13,7 @@ type CreateSocialmediaRequest struct {
 }
 
 type SocialmediaResponse struct {
-	Id             string `json:"id"`
+	Id             uuid.UUID `json:"id"`
 	Name           string `json:"name"`
 	SocialmediaUrl string `json:"social_media_url"`
 	CreatedAt      time.Time `json:"created_at"`

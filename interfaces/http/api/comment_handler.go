@@ -24,6 +24,7 @@ func (handler CommentHandler) Route(app *fiber.App){
 	comment.Get("/",handler.GetAllComment)
 	comment.Get("/:id",handler.GetOneComment)
 	comment.Put("/:id",handler.UpdateComment)
+	comment.Delete("/:id",handler.DeleteComment)
 }
 
 func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
