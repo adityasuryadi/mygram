@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log"
 	"mygram/domains"
 	entities "mygram/domains/entity"
 
@@ -18,8 +19,8 @@ type PermissionRepositoryImpl struct {
 }
 
 func (repository *PermissionRepositoryImpl) Insert(permission *entities.Permission) error {
-	err := repository.db.Create(&repository).Error
-
+	err := repository.db.Create(&permission).Error
+	log.Print(permission)
 	if err != nil {
 		return err
 	}

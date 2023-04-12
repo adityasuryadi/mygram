@@ -7,6 +7,7 @@ import (
 )
 
 type Permission struct {
+	gorm.Model
 	Id        int `gorm:"primaryKey;type:int;autoIncrement;" column:"id"`
 	Name  		string    `gorm:"column:name"`
 	CreatedAt time.Time `gorm:"column:created_at"`
@@ -14,7 +15,7 @@ type Permission struct {
 }
 
 func (Permission) TableName() string {
-	return "Permission"
+	return "permission"
 }
 
 func (entity *Permission) BeforeCreate(db *gorm.DB) error {

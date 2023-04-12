@@ -57,6 +57,12 @@ func main() {
 	socialmediaHandler:=handler.NewSocialmediaHandler(socialmediaUsecase)
 	socialmediaHandler.Route(app)
 
+	// permission
+	permissionRepository := repository.NewPermissionRepository(db)
+	permissionUsecase := usecase.NewPermissionUsecase(permissionRepository)
+	permissionHandler := handler.NewPermissionHandler(permissionUsecase)
+	permissionHandler.Route(app)
+
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404) // => 404 "Not Found"

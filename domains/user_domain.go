@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	GetUserByEmail(email string) (*entities.User,error) 
 	Insert(user *entities.User) error
+	AssignRole(userId string,roles []int) error
 }
 
 // Service contract

@@ -36,3 +36,17 @@ func (repository *UserRepositoryImpl) GetUserByEmail(email string) (*entities.Us
 	}
 	return &userEntity,err	
 }
+
+
+func (repository *UserRepositoryImpl) AssignRole(userId string,roles []int) error {
+	var user entities.User
+	err := repository.db.Where("id = ?",userId).First(&user).Error
+	if err != nil {
+		return err
+	}
+	repository.db.Model(&user).Association("Roles").Replace([]entities.Role{
+		{Id: 3},
+	})
+	return nil
+}
+

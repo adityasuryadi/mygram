@@ -4,6 +4,8 @@ import (
 	"log"
 	"mygram/domains"
 	"mygram/domains/model"
+	"mygram/infrastructures/helper"
+	"mygram/infrastructures/security"
 	"mygram/interfaces/http/api/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -105,18 +107,29 @@ func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 // @Router /photo/id [GET]
 func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	res,errCode := handler.usecase.GetPhotoById(id)
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
 
-	if errCode == "200"{
-		model.SuccessResponse(ctx,"SUCCESS GET PHOTO",res)
-	}
+	can:=helper.Can(email,"photo.list")
+	log.Print("can",can)
+	
+	if !can {
+		model.ForbiddenResponse(ctx,"FORBIDDEN",nil)
+		return nil
+	}else{
+		res,errCode := handler.usecase.GetPhotoById(id)
 
-	if errCode == "404"{
-		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",res)
-	}
+		if errCode == "200"{
+			model.SuccessResponse(ctx,"SUCCESS GET PHOTO",res)
+		}
 
-	if errCode == "500" {
-		model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
+		if errCode == "404"{
+			model.NotFoundResponse(ctx,"PHOTO NOT FOUND",res)
+		}
+
+		if errCode == "500" {
+			model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
+		}
 	}
 	return nil
 }

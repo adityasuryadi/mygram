@@ -7,14 +7,16 @@ import (
 )
 
 type Role struct {
+	gorm.Model
 	Id        int `gorm:"primaryKey;type:int;autoIncrement;" column:"id"`
 	Name  string    `gorm:"column:name"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
+	Permissions []Permission `gorm:"many2many:permission_role"`
 }
 
 func (Role) TableName() string {
-	return "Role"
+	return "role"
 }
 
 func (entity *Role) BeforeCreate(db *gorm.DB) error {
