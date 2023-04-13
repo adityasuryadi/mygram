@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"log"
 	"mygram/domains"
 	"mygram/domains/model"
 	"mygram/infrastructures/helper"
-	"mygram/infrastructures/security"
 	"mygram/interfaces/http/api/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,23 +41,15 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
+
+	can,_:=helper.Can(email,"photo.create")
+	
+	if !can {
+		model.ForbiddenResponse(ctx,"FORBIDDEN",nil)
+		return nil
+	}
 	
 	request.Email = email
-	// headers := ctx.GetReqHeaders()
-	// for i, _ := range headers {
-	// 	fmt.Println(i)
-	// }
-	// fmt.Println(ctx.GetReqHeaders())
-	
-	// token, err := jwt.ParseWithClaims(token, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte("AllYourBase"), nil
-	// })
-	
-	// if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-	// 	fmt.Printf("%v %v", claims.Foo, claims.RegisteredClaims.Issuer)
-	// } else {
-	// 	fmt.Println(err)
-	// }
 
 	result,errCode := handler.usecase.CreatePhoto(request)
 	model.GetResponse(ctx,errCode,"",result)
@@ -79,18 +69,7 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 // @Router /photo [GET]
 func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 	res,errCode := handler.usecase.FindAll()
-
-	if errCode == "200"{
-		model.SuccessResponse(ctx,"SUCCESS GET PHOTO",res)
-	}
-
-	if errCode == "404"{
-		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",res)
-	}
-
-	if errCode == "500" {
-		model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
-	}
+	model.GetResponse(ctx,errCode,"",res)
 	return nil
 }
 
@@ -107,30 +86,11 @@ func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 // @Router /photo/id [GET]
 func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
-	email := claims["email"].(string)
-
-	can:=helper.Can(email,"photo.list")
-	log.Print("can",can)
 	
-	if !can {
-		model.ForbiddenResponse(ctx,"FORBIDDEN",nil)
-		return nil
-	}else{
-		res,errCode := handler.usecase.GetPhotoById(id)
+	res,responseCode := handler.usecase.GetPhotoById(ctx,id)
 
-		if errCode == "200"{
-			model.SuccessResponse(ctx,"SUCCESS GET PHOTO",res)
-		}
+	model.GetResponse(ctx,responseCode,"",res)
 
-		if errCode == "404"{
-			model.NotFoundResponse(ctx,"PHOTO NOT FOUND",res)
-		}
-
-		if errCode == "500" {
-			model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
-		}
-	}
 	return nil
 }
 
@@ -146,16 +106,7 @@ func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 // @Failure 500 {string} model.WebResponse{code=500}
 // @Router /photo/id [PUT]
 func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
-	var request model.CreatePhotoRequest
-	ctx.BodyParser(&request)
-	id := ctx.Params("id")
-	user := ctx.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
-	request.Email = email
-	
-	result,errCode := handler.usecase.EditPhoto(id,model.UpdatePhotoRequest(request))
-	log.Println(errCode)
+	result,errCode := handler.usecase.EditPhoto(ctx)
 	model.GetResponse(ctx,errCode,"",result)
 	return nil
 }
@@ -172,22 +123,7 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 // @Failure 503 {object} model.WebResponse{}
 // @Router /photo/{id} [delete]
 func (handler PhotoHandler) DeletePhoto(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
-	errCode := handler.usecase.DeletePhoto(id)
-	if errCode == "200"{
-		model.SuccessResponse(ctx,"SUCCESS DELETE PHOTO",nil)
-		return nil
-	}
-
-	if errCode == "404"{
-		model.NotFoundResponse(ctx,"PHOTO NOT FOUND",nil)
-		return nil
-	}
-
-	if errCode == "500" {
-		model.InternalServerErrorResponse(ctx,"INTERNAL SERVER ERROR",nil)
-		return nil
-	}
-
+	errCode := handler.usecase.DeletePhoto(ctx)
+	model.GetResponse(ctx,errCode,"",nil)
 	return nil
 }

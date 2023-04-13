@@ -3,6 +3,8 @@ package domains
 import (
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 // repository contract
@@ -18,7 +20,7 @@ type PhotoRepository interface {
 type PhotoUsecase interface {
 	CreatePhoto(model.CreatePhotoRequest) (interface{},string)
 	FindAll() ([]model.PhotoResponse,string)
-	GetPhotoById(id string) (*model.PhotoResponse,string)
-	EditPhoto(id string,request model.UpdatePhotoRequest) (interface{},string)
-	DeletePhoto(id string) (string)
+	GetPhotoById(ctx *fiber.Ctx,id string) (*model.PhotoResponse,string)
+	EditPhoto(ctx *fiber.Ctx) (interface{},string)
+	DeletePhoto(ctx *fiber.Ctx) (string)
 }

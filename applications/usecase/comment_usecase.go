@@ -5,9 +5,13 @@ import (
 	"mygram/domains"
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
+	"mygram/infrastructures/helper"
+	"mygram/infrastructures/security"
 	"mygram/infrastructures/validation"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -26,9 +30,19 @@ type CommentUsecaseImpl struct {
 }
 
 // DeleteComment implements domains.CommentUsecase
-func (commentUsecase *CommentUsecaseImpl) DeleteComment(id string) (string, interface{}, *model.CommentResponse) {
+func (commentUsecase *CommentUsecaseImpl) DeleteComment(ctx *fiber.Ctx) (string, interface{}, *model.CommentResponse) {
 	errCode := make(chan string,1)
+	id := ctx.Params("id")
 	result, err := commentUsecase.CommentRepo.FindCommentById(id)
+
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
+
+	can,userId:=helper.Can(email,"comment.delete")
+	if !can || userId != result.UserId {
+		errCode <- "403"
+		return <-errCode, nil, nil
+	}
 
 	if result == nil && err == nil {
 		errCode <- "404"
@@ -51,17 +65,29 @@ func (commentUsecase *CommentUsecaseImpl) DeleteComment(id string) (string, inte
 }
 
 // EditComment implements domains.CommentUsecase
-func (commentUsecase *CommentUsecaseImpl) EditComment(id string, request model.UpdateCommentRequest) (string, interface{}, *model.CommentResponse) {
+func (commentUsecase *CommentUsecaseImpl) EditComment(ctx *fiber.Ctx) (string, interface{}, *model.CommentResponse) {
 	errCode := make(chan string, 1)
 	var response = &model.CommentResponse{}
+	var request model.UpdateCommentRequest
+	id := ctx.Params("id")
+	ctx.BodyParser(&request)
 
-	err := commentUsecase.Validate.ValidateRequest(request)
-	if err != nil {
-		errCode <- "400"
-		return <-errCode, err, nil
-	}
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
 
 	result, err := commentUsecase.CommentRepo.FindCommentById(id)
+
+	can,userId:=helper.Can(email,"comment.edit")
+	if !can || userId != result.UserId {
+		errCode <- "403"
+		return <-errCode, nil, nil
+	}
+		
+	errValidation := commentUsecase.Validate.ValidateRequest(request)
+	if errValidation != nil {
+		errCode <- "400"
+		return <-errCode, errValidation, nil
+	}
 
 	if result == nil && err == nil {
 		errCode <- "404"

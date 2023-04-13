@@ -49,8 +49,8 @@ func (handler UserHandler) Register(ctx *fiber.Ctx)error{
 	var request userModel.RegisterUserRequest
 	ctx.BodyParser(&request)
 
-	handler.UserUsecase.RegisterUser(request)
-	model.SuccessResponse(ctx,"SUCCESS CREATE DATA",nil)
+	responseCode,data:=handler.UserUsecase.RegisterUser(request)
+	model.GetResponse(ctx,responseCode,"",data)
 	return nil
 }
 

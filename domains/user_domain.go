@@ -15,7 +15,7 @@ type UserRepository interface {
 
 // Service contract
 type UserUsecase interface {
-	RegisterUser(request model.RegisterUserRequest) (errorCode string)
+	RegisterUser(request model.RegisterUserRequest) (string,interface{})
 	FetchUserLogin(model.LoginUserRequest) (string,string)
 }
 

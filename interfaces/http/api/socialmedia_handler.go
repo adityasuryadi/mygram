@@ -63,11 +63,10 @@ func (handler SocialMediaHandler) GetOneSocialmedia(ctx *fiber.Ctx) error {
 }
 
 func (handler SocialMediaHandler) EditSocialmedia(ctx *fiber.Ctx) error{
-	id := ctx.Params("id")
 	var request model.CreateSocialmediaRequest
 	ctx.BodyParser(&request)
 
-	responseCode,validation,response := handler.usecase.EditSocialmedia(id,&request)
+	responseCode,validation,response := handler.usecase.EditSocialmedia(ctx)
 	if responseCode == "400" {
 		model.GetResponse(ctx,responseCode,"",validation)
 		return nil
@@ -78,8 +77,7 @@ func (handler SocialMediaHandler) EditSocialmedia(ctx *fiber.Ctx) error{
 }
 
 func (handler SocialMediaHandler) DeleteSocialmedia(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
-	responseCode,_,response := handler.usecase.DeleteSocialmedia(id)
+	responseCode,_,response := handler.usecase.DeleteSocialmedia(ctx)
 	model.GetResponse(ctx,responseCode,"",response)
 	return nil
 }

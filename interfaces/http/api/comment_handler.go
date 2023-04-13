@@ -64,18 +64,16 @@ func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
 }
 
 func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
-	result,validation,errCode:=handler.CommentUsecase.GetCommentById(id)
-	if errCode == "400" {
-		model.GetResponse(ctx,errCode,"",validation)
+	responseCode,validation,result:=handler.CommentUsecase.EditComment(ctx)
+	if responseCode == "400" {
+		model.GetResponse(ctx,responseCode,"",validation)
 	}
-		model.GetResponse(ctx,errCode,"",result)
+		model.GetResponse(ctx,responseCode,"",result)
 		return nil	
 }
 
 func (handler CommentHandler) DeleteComment(ctx *fiber.Ctx) error {
-	id := ctx.Params("id")
-	errCode,_,result:=handler.CommentUsecase.DeleteComment(id)
+	errCode,_,result:=handler.CommentUsecase.DeleteComment(ctx)
 	model.GetResponse(ctx,errCode,"",result)
 	return nil
 }

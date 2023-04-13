@@ -4,10 +4,11 @@ import (
 	entities "mygram/domains/entity"
 	config "mygram/infrastructures"
 	dbConfig "mygram/infrastructures/database"
-	// repository "mygram/infrastructures/repository/postgres"
+
+	"github.com/google/uuid"
 )
 
-func Can(email string, permissionName string) bool {
+func Can(email string, permissionName string) (bool,uuid.UUID) {
 	configApp := config.New()
 	db := dbConfig.NewPostgresDB(configApp)
 
@@ -22,7 +23,6 @@ func Can(email string, permissionName string) bool {
 	db.Preload("Roles.Permissions").First(&user)
 	for _, role := range user.Roles {
 		for _, permission := range role.Permissions {
-			// permissions = append(permissions, permission.Name)
 			if permission.Name == permissionName {
 				found = true
 				break
@@ -30,5 +30,5 @@ func Can(email string, permissionName string) bool {
 		}
 	}
 
-	return found
+	return found,user.Id
 }

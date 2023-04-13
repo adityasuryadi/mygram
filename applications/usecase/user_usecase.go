@@ -23,18 +23,30 @@ type UserUseCaseImpl struct {
 }
 
 // RegisterUser implements domains.UserUsecase
-func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) (errorCode string) {
+func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) (string,interface{}) {
 	user := &userEntities.User{
 		UserName:  request.Username,
 		Email:     request.Email,
 		Password:  security.GetHash([]byte(request.Password)),
 		Age:       request.Age,
 	}
-	err:=usecase.repository.Insert(user)
-	if err != nil {
-		return "500"
+
+	responseCode := make(chan string,1)
+
+	
+	validationErr := usecase.Validate.ValidateRequest(request)
+	if validationErr != nil {
+		responseCode<-"400"
+		return <-responseCode,validationErr
 	}
-	return "200"
+
+	err:=usecase.repository.Insert(user)
+
+
+	if err != nil {
+		return "500",nil
+	}
+	return "200",nil
 }
 
 func (usecase *UserUseCaseImpl) FetchUserLogin(request model.LoginUserRequest) (string,string) {
