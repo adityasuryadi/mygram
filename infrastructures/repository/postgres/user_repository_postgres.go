@@ -38,15 +38,25 @@ func (repository *UserRepositoryImpl) GetUserByEmail(email string) (*entities.Us
 }
 
 
-func (repository *UserRepositoryImpl) AssignRole(userId string,roles []int) error {
+func (repository *UserRepositoryImpl) AssignRole(userId string,roles []entities.Role) error {
 	var user entities.User
+	
+	tx:=repository.db.Begin()
 	err := repository.db.Where("id = ?",userId).First(&user).Error
 	if err != nil {
 		return err
+	} 
+	tx.Model(&user).Association("Roles").Clear()
+	if err != nil {
+		tx.Rollback()
 	}
-	repository.db.Model(&user).Association("Roles").Replace([]entities.Role{
-		{Id: 3},
-	})
+	tx.Model(&user).Association("Roles").Replace(roles)
+	if err != nil {
+		tx.Rollback()
+	}
+	if err := tx.Commit().Error; err !=  nil {
+		tx.Rollback()
+	}
 	return nil
 }
 

@@ -57,6 +57,12 @@ func main() {
 	socialmediaHandler:=handler.NewSocialmediaHandler(socialmediaUsecase)
 	socialmediaHandler.Route(app)
 
+	// Role
+	roleRepository := repository.NewRoleRepository(db)
+	roleUsecase:=usecase.NewRoleUsecase(roleRepository)
+	roleHandler := handler.NewRoleHandler(roleUsecase)
+	roleHandler.Route(app)
+
 	// permission
 	permissionRepository := repository.NewPermissionRepository(db)
 	permissionUsecase := usecase.NewPermissionUsecase(permissionRepository)

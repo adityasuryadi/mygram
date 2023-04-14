@@ -23,6 +23,7 @@ type UserHandler struct {
 func (handler UserHandler) Route(app *fiber.App){
 	app.Post("register",handler.Register)
 	app.Post("login",handler.Login)
+	app.Put("user/:id/assign",handler.PutUserRole)
 }
 
 func (handler UserHandler) GetUser(ctx *fiber.Ctx) error {
@@ -96,5 +97,11 @@ func (handler UserHandler) Login(ctx *fiber.Ctx) error {
 		return nil
 	}
 
+	return nil
+}
+
+func (handler UserHandler) PutUserRole(ctx *fiber.Ctx) error {
+	responseCode,_,_:=handler.UserUsecase.UpdateUserRole(ctx)
+	model.GetResponse(ctx,responseCode,"",nil)
 	return nil
 }
