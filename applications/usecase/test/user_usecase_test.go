@@ -64,7 +64,7 @@ func TestUserUsecase_RegisterUserSuccess(t *testing.T) {
 
 	userRepository.Mock.On("Insert",user).Return(user)
 	userUsecase := usecase.NewUserUseCase(userRepository,validation)
-	errorCode := userUsecase.RegisterUser(userRequest)
+	errorCode,_ := userUsecase.RegisterUser(userRequest)
 	assert.Equal(t,errorCode,"200")
 
 	userRepository.Mock.AssertCalled(t,"Insert",user)

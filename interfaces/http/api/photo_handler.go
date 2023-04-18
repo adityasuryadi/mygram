@@ -30,10 +30,17 @@ func (handler PhotoHandler) Route(app *fiber.App){
 	photo.Delete("/:id",handler.DeletePhoto)
 }
 
-type MyCustomClaims struct {
-	Foo string `json:"foo"`
-	jwt.RegisteredClaims
-}
+// PostPhoto godoc
+// @Summary Create Photo
+// @Description Create Photo
+// @Tags photo
+// @Accept json
+// @Produce json
+// @Param photo body model.CreateSocialmediaRequest true "Create Photo"
+// @Success 200 {object} model.WebResponse{data=nil}
+// @Failure 400 {string} model.WebResponse{code=400}
+// @Failure 500 {string} model.WebResponse{code=500}
+// @Router /photo/ [POST]
 
 func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 	var request model.CreatePhotoRequest
@@ -49,7 +56,7 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 		return nil
 	}
 	
-	request.Email = email
+	// request.Email = email
 
 	result,errCode := handler.usecase.CreatePhoto(request)
 	model.GetResponse(ctx,errCode,"",result)
@@ -101,6 +108,7 @@ func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param photo body model.UpdatePhotoRequest true "Update photo"
+// @Param id path string true "Photo ID"
 // @Success 200 {object} model.WebResponse{data=model.PhotoResponse}
 // @Failure 404 {string} model.WebResponse{code=404}
 // @Failure 500 {string} model.WebResponse{code=500}
@@ -112,12 +120,12 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 }
 
 // DeletePhoto function removes a photo by ID
-// @Summary Remove book by ID
-// @Description Remove book by ID
+// @Summary Remove photo by ID
+// @Description Remove photo by ID
 // @Tags photo
 // @Accept json
 // @Produce json
-// @Param id path int true "Book ID"
+// @Param id path string true "Photo ID"
 // @Success 200 {object} model.WebResponse{}
 // @Failure 404 {object} model.WebResponse{}
 // @Failure 503 {object} model.WebResponse{}

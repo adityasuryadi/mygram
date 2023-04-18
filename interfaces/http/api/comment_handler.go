@@ -27,6 +27,18 @@ func (handler CommentHandler) Route(app *fiber.App){
 	comment.Delete("/:id",handler.DeleteComment)
 }
 
+// PostComment godoc
+// @Summary Create Comment
+// @Description Create Comment
+// @Tags comment
+// @Accept json
+// @Produce json
+// @Param comment body model.CreateCommentRequest true "Create New Comment"
+// @Success 200 {object} model.WebResponse{}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /comment/ [post]
+
 func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
 	var request model.CreateCommentRequest
 	ctx.BodyParser(&request)
@@ -50,12 +62,35 @@ func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
 	return nil
 }
 
+// List Comment
+// @Summary List Comment
+// @Description List Comment
+// @Tags comment
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.WebResponse{data=[]model.CommentResponse}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /comment [get]
+
 func (handler CommentHandler) GetAllComment(ctx *fiber.Ctx) error {
 	result,_,errCode := handler.CommentUsecase.GetAllComment()
 	model.GetResponse(ctx,errCode,"",result)
 	return nil
 }
 
+
+// Find Comment
+// @Summary Find Comment
+// @Description Find Comment
+// @Tags comment
+// @Accept json
+// @Produce json
+// @Param id path string true "Comment Id"
+// @Success 200 {object} model.WebResponse{data=model.CommentResponse}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /comment/{id} [get]
 func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	result,_,errCode := handler.CommentUsecase.GetCommentById(id)
@@ -63,6 +98,19 @@ func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
 	return nil 
 }
 
+
+// Edit Comment
+// @Summary Edit Comment
+// @Description Edit Comment
+// @Tags comment
+// @Accept json
+// @Produce json
+// @Param comment body model.UpdateCommentRequest true "Update Comment"
+// @Param id path string true "Comment Id"
+// @Success 200 {object} model.WebResponse{}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /comment/{id} [put]
 func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
 	responseCode,validation,result:=handler.CommentUsecase.EditComment(ctx)
 	if responseCode == "400" {
@@ -72,6 +120,18 @@ func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
 		return nil	
 }
 
+
+// Delete Comment
+// @Summary Delete Comment
+// @Description Delete Comment
+// @Tags comment
+// @Accept json
+// @Produce json
+// @Param id path string true "Comment Id"
+// @Success 200 {object} model.WebResponse{}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /comment/{id} [delete]
 func (handler CommentHandler) DeleteComment(ctx *fiber.Ctx) error {
 	errCode,_,result:=handler.CommentUsecase.DeleteComment(ctx)
 	model.GetResponse(ctx,errCode,"",result)

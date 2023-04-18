@@ -10,7 +10,7 @@ type CreatePhotoRequest struct {
 	Title    string `json:"title" validate:"required"`
 	PhotoUrl string `json:"photo_url" validate:"required"`
 	Caption  string `json:"caption"`
-	Email string
+	Email string	
 }
 
 type CreatePhotoResponse struct {

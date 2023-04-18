@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewPermissionHandler(usecase domains.PermissionUsecase) *PermissionHandler {
-	return  &PermissionHandler{
+func NewPermissionHandler(usecase domains.PermissionUsecase) PermissionHandler {
+	return  PermissionHandler{
 		usecase: usecase,
 	}
 }
