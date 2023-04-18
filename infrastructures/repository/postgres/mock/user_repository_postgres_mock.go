@@ -9,16 +9,21 @@ import (
 )
 
 type UserRepositoryMock struct {
-	Mock mock.Mock 
+	Mock mock.Mock
 }
 
-func (repository *UserRepositoryMock) GetUserByEmail(email string) (*entities.User,error) {
-	arguments:=repository.Mock.Called(email)
+// AssignRole implements domains.UserRepository
+func (*UserRepositoryMock) AssignRole(userId string, roles []entities.Role) error {
+	panic("unimplemented")
+}
+
+func (repository *UserRepositoryMock) GetUserByEmail(email string) (*entities.User, error) {
+	arguments := repository.Mock.Called(email)
 	if arguments.Get(0) == nil {
-		return nil,errors.New("user notfound")
-	}else{
+		return nil, errors.New("user notfound")
+	} else {
 		user := arguments.Get(0).(entities.User)
-		return &user,nil  
+		return &user, nil
 	}
 }
 

@@ -18,6 +18,7 @@ func TestGetUserBYEmail(t *testing.T){
 	var userRepository = &mock_repository.UserRepositoryMock{
 		Mock: mock.Mock{},
 	}
+	
 
 	db, _, err := sqlmock.New()
 	if err != nil {

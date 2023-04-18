@@ -4,7 +4,12 @@ import (
 	"mygram/domains"
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
+	"mygram/infrastructures/helper"
+	"mygram/infrastructures/security"
 	"mygram/infrastructures/validation"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func NewSocialmediaUsecase(socialmediaRepo domains.SocialmediaRepository,userRepo domains.UserRepository,validate validation.Validation ) domains.SocialmediaUsecase {
@@ -107,9 +112,22 @@ func (socialmediaUsecase *SocialmediaUsecaseImpl) FindSocialmediaById(id string)
 	return <-responseCode,nil,response
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(id string,request *model.CreateSocialmediaRequest)(string,interface{},*model.SocialmediaResponse){
+func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(ctx *fiber.Ctx)(string,interface{},*model.SocialmediaResponse){
 	responseCode := make(chan string,1)
+	var request model.CreateSocialmediaRequest
+	id:=ctx.Params("id")
+
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
+	
+
 	socialmedia,err := socialmediaUsecase.socialmediaRepo.FindById(id)
+	can,userId:=helper.Can(email,"socialmedia.edit")
+	if !can || userId != socialmedia.UserId {
+		responseCode <- "403"
+		return <-responseCode,nil,nil
+	}
+	
 	if socialmedia == nil && err == nil {
 		responseCode <- "404"
 		return <-responseCode,nil,nil
@@ -118,7 +136,7 @@ func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(id string,requ
 	validationErr := socialmediaUsecase.validate.ValidateRequest(request)
 	if validationErr != nil {
 		responseCode<-"400"
-		return <-responseCode,err,nil
+		return <-responseCode,validationErr,nil
 	}
 
 	socialmedia.Name = request.Name
@@ -136,9 +154,21 @@ func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(id string,requ
 	return <-responseCode,nil,&response
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) DeleteSocialmedia(id string) (string,interface{},*model.SocialmediaResponse){
+func (socialmediaUsecase *SocialmediaUsecaseImpl) DeleteSocialmedia(ctx *fiber.Ctx) (string,interface{},*model.SocialmediaResponse){
 	responseCode := make(chan string,1)
+	id := ctx.Params("id")
+	
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
+
 	socialmedia,err := socialmediaUsecase.socialmediaRepo.FindById(id)
+
+	can,userId:=helper.Can(email,"socialmedia.delete")
+	if !can || userId != socialmedia.UserId {
+		responseCode <- "403"
+		return <-responseCode,nil,nil
+	}
+
 	if socialmedia == nil && err == nil {
 		responseCode <- "404"
 		return <-responseCode,nil,nil

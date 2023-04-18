@@ -1,13 +1,7 @@
 package main
 
 import (
-	usecase "mygram/applications/usecase"
 	"mygram/commons/exceptions"
-	config "mygram/infrastructures"
-	dbConfig "mygram/infrastructures/database"
-	repository "mygram/infrastructures/repository/postgres"
-	"mygram/infrastructures/validation"
-	handler "mygram/interfaces/http/api"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
@@ -16,6 +10,11 @@ import (
 	// replace with your own docs folder, usually "github.com/username/reponame/docs"
 	_ "mygram/docs"
 )
+
+func NewApp() *fiber.App{
+	app:=fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
+	return app
+}
 
 // @title TEST API
 // @version 2.0
@@ -27,35 +26,36 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:5000
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
-	configApp := config.New()
-	db:=dbConfig.NewPostgresDB(configApp)
-	validate:=validation.NewValidation(db)
-
+	
 	// user
-	userRepository:=repository.NewUserRepositoryPostgres(db)
-	userUsecase:=usecase.NewUserUseCase(userRepository,validate)
-	userHandler:=handler.NewUserHandler(userUsecase)
+	
+	userHandler := InitializedUserHandler()
 	userHandler.Route(app)
 
 	// photo
-	photoRepository := repository.NewPhotoRepository(db)
-	photoUsecase := usecase.NewPhotoUsecase(photoRepository,userRepository,validate)
-	photoHandler := handler.NewPhotoHandler(photoUsecase)
+	photoHandler := InitializedPhotoHandler()
 	photoHandler.Route(app)
 
 	// comment
-	commentRepository := repository.NewCommentRepository(db)
-	commentUsecase := usecase.NewCommmentUsecase(commentRepository,userRepository,validate)
-	commentHandler := handler.NewCommentHandler(commentUsecase)
+	commentHandler := InitializedCommentHandler()
 	commentHandler.Route(app)
 
 	// social media
-	socialmediaRepository := repository.NewSocialmediaRepository(db)
-	socialmediaUsecase := usecase.NewSocialmediaUsecase(socialmediaRepository,userRepository,validate)
-	socialmediaHandler:=handler.NewSocialmediaHandler(socialmediaUsecase)
+	socialmediaHandler:= InitializedSocialmediaHandler()
 	socialmediaHandler.Route(app)
+
+	// Role
+	roleHandler:= InitializedRoleHandler()
+	roleHandler.Route(app)
+
+	// permission
+	permissionHandler := InitializedPermissionHandler()
+	permissionHandler.Route(app)
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
