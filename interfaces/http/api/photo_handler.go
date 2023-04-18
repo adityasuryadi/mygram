@@ -36,12 +36,12 @@ func (handler PhotoHandler) Route(app *fiber.App){
 // @Tags photo
 // @Accept json
 // @Produce json
-// @Param photo body model.CreateSocialmediaRequest true "Create Photo"
-// @Success 200 {object} model.WebResponse{data=nil}
+// @Param photo body model.CreatePhotoRequest true "Create Photo"
+// @Success 200 {object} model.WebResponse{}
 // @Failure 400 {string} model.WebResponse{code=400}
 // @Failure 500 {string} model.WebResponse{code=500}
-// @Router /photo/ [POST]
-
+// @Router /photo [post]
+// @Security BearerAuth
 func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 	var request model.CreatePhotoRequest
 	ctx.BodyParser(&request)
@@ -74,6 +74,7 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 // @Failure 400 {string} model.WebResponse{code=400}
 // @Failure 500 {string} model.WebResponse{code=500}
 // @Router /photo [GET]
+// @Security BearerAuth
 func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 	res,errCode := handler.usecase.FindAll()
 	model.GetResponse(ctx,errCode,"",res)
@@ -91,6 +92,7 @@ func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 // @Failure 404 {string} model.WebResponse{code=404}
 // @Failure 500 {string} model.WebResponse{code=500}
 // @Router /photo/id [GET]
+// @Security BearerAuth
 func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	
@@ -113,6 +115,7 @@ func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 // @Failure 404 {string} model.WebResponse{code=404}
 // @Failure 500 {string} model.WebResponse{code=500}
 // @Router /photo/id [PUT]
+// @Security BearerAuth
 func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 	result,errCode := handler.usecase.EditPhoto(ctx)
 	model.GetResponse(ctx,errCode,"",result)
@@ -130,6 +133,7 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 // @Failure 404 {object} model.WebResponse{}
 // @Failure 503 {object} model.WebResponse{}
 // @Router /photo/{id} [delete]
+// @Security BearerAuth
 func (handler PhotoHandler) DeletePhoto(ctx *fiber.Ctx) error {
 	errCode := handler.usecase.DeletePhoto(ctx)
 	model.GetResponse(ctx,errCode,"",nil)

@@ -13,6 +13,30 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.CreateCommentRequest:
+    properties:
+      message:
+        type: string
+      photo_id:
+        type: string
+    required:
+    - message
+    - photo_id
+    type: object
+  model.CreatePhotoRequest:
+    properties:
+      caption:
+        type: string
+      email:
+        type: string
+      photo_url:
+        type: string
+      title:
+        type: string
+    required:
+    - photo_url
+    - title
+    type: object
   model.CreateSocialmediaRequest:
     properties:
       email:
@@ -129,6 +153,74 @@ info:
   title: TEST API
   version: "2.0"
 paths:
+  /comment:
+    get:
+      consumes:
+      - application/json
+      description: List Comment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.CommentResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: List Comment
+      tags:
+      - comment
+    post:
+      consumes:
+      - application/json
+      description: Create Comment
+      parameters:
+      - description: Create New Comment
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CommentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Comment
+      tags:
+      - comment
   /comment/{id}:
     delete:
       consumes:
@@ -155,6 +247,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Delete Comment
       tags:
       - comment
@@ -188,6 +282,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Find Comment
       tags:
       - comment
@@ -222,6 +318,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Edit Comment
       tags:
       - comment
@@ -282,7 +380,40 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: List Photo
+      tags:
+      - photo
+    post:
+      consumes:
+      - application/json
+      description: Create Photo
+      parameters:
+      - description: Create Photo
+        in: body
+        name: photo
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreatePhotoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create Photo
       tags:
       - photo
   /photo/{id}:
@@ -311,6 +442,8 @@ paths:
           description: Service Unavailable
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Remove photo by ID
       tags:
       - photo
@@ -339,6 +472,8 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: List Photo
       tags:
       - photo
@@ -378,6 +513,8 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: Edit Photo
       tags:
       - photo
@@ -438,6 +575,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: list socialmedia
       tags:
       - socialmedia
@@ -467,6 +606,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Register a new socialmedia
       tags:
       - socialmedia
@@ -490,6 +631,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: Delete Socialmedia
       tags:
       - socialmedia
@@ -517,6 +660,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: find socialmedia
       tags:
       - socialmedia
@@ -551,7 +696,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
       summary: edit socialmedia
       tags:
       - socialmedia
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

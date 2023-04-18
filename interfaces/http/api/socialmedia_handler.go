@@ -41,6 +41,7 @@ func (handler SocialMediaHandler) Route(app *fiber.App){
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /socialmedia/ [post]
+// @Security BearerAuth
 func (handler SocialMediaHandler) PostSocialmedia(ctx *fiber.Ctx) error {
 	var request model.CreateSocialmediaRequest
 	
@@ -70,6 +71,7 @@ func (handler SocialMediaHandler) PostSocialmedia(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /socialmedia/ [get]
+// @Security BearerAuth
 func (handler SocialMediaHandler) GetAllSocialmedia(ctx *fiber.Ctx) error {
 	responseCode,_,data := handler.usecase.ListSocialmedia()
 	model.GetResponse(ctx,responseCode,"",data)
@@ -86,6 +88,7 @@ func (handler SocialMediaHandler) GetAllSocialmedia(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /socialmedia/{id} [GET]
+// @Security BearerAuth
 func (handler SocialMediaHandler) GetOneSocialmedia(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	responseCode,_,data := handler.usecase.FindSocialmediaById(id)
@@ -104,6 +107,7 @@ func (handler SocialMediaHandler) GetOneSocialmedia(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /socialmedia/{id} [PUT]
+// @Security BearerAuth
 func (handler SocialMediaHandler) EditSocialmedia(ctx *fiber.Ctx) error{
 	var request model.CreateSocialmediaRequest
 	ctx.BodyParser(&request)
@@ -128,6 +132,7 @@ func (handler SocialMediaHandler) EditSocialmedia(ctx *fiber.Ctx) error{
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /socialmedia/{id} [DELETE]
+// @Security BearerAuth
 func (handler SocialMediaHandler) DeleteSocialmedia(ctx *fiber.Ctx) error {
 	responseCode,_,response := handler.usecase.DeleteSocialmedia(ctx)
 	model.GetResponse(ctx,responseCode,"",response)

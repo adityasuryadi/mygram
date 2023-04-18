@@ -34,11 +34,11 @@ func (handler CommentHandler) Route(app *fiber.App){
 // @Accept json
 // @Produce json
 // @Param comment body model.CreateCommentRequest true "Create New Comment"
-// @Success 200 {object} model.WebResponse{}
+// @Success 200 {object} model.WebResponse{data=model.CommentResponse}
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
-// @Router /comment/ [post]
-
+// @Router /comment [post]
+// @Security BearerAuth
 func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
 	var request model.CreateCommentRequest
 	ctx.BodyParser(&request)
@@ -72,7 +72,7 @@ func (handler CommentHandler) PostComment(ctx *fiber.Ctx) error{
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /comment [get]
-
+// @Security BearerAuth
 func (handler CommentHandler) GetAllComment(ctx *fiber.Ctx) error {
 	result,_,errCode := handler.CommentUsecase.GetAllComment()
 	model.GetResponse(ctx,errCode,"",result)
@@ -91,6 +91,7 @@ func (handler CommentHandler) GetAllComment(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /comment/{id} [get]
+// @Security BearerAuth
 func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	result,_,errCode := handler.CommentUsecase.GetCommentById(id)
@@ -111,6 +112,7 @@ func (handler CommentHandler) GetOneComment(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /comment/{id} [put]
+// @Security BearerAuth
 func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
 	responseCode,validation,result:=handler.CommentUsecase.EditComment(ctx)
 	if responseCode == "400" {
@@ -132,6 +134,7 @@ func (handler CommentHandler) UpdateComment(ctx *fiber.Ctx) error {
 // @Failure 400 {object} model.WebResponse{}
 // @Failure 500 {object} model.WebResponse{}
 // @Router /comment/{id} [delete]
+// @Security BearerAuth
 func (handler CommentHandler) DeleteComment(ctx *fiber.Ctx) error {
 	errCode,_,result:=handler.CommentUsecase.DeleteComment(ctx)
 	model.GetResponse(ctx,errCode,"",result)

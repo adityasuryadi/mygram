@@ -26,6 +26,9 @@ func NewApp() *fiber.App{
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:5000
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
 	
