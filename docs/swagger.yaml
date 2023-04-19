@@ -140,7 +140,7 @@ definitions:
       status:
         type: string
     type: object
-host: localhost:5000
+host: 103.54.170.135:5000
 info:
   contact:
     email: fiber@swagger.io

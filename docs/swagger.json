@@ -14,7 +14,7 @@
         },
         "version": "2.0"
     },
-    "host": "localhost:5000",
+    "host": "103.54.170.135:5000",
     "basePath": "/",
     "paths": {
         "/comment": {

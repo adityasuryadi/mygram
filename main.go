@@ -24,7 +24,7 @@ func NewApp() *fiber.App{
 // @contact.email fiber@swagger.io
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host localhost:5000
+// @host 103.54.170.135:5000
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth
 // @in header
