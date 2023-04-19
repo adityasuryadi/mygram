@@ -83,6 +83,16 @@ func InitializedPermissionHandler(filenames ...string) handler.PermissionHandler
 	return permissionHandler
 }
 
+func InitializedProductHandler(filenames ...string) handler.ProductHandler {
+	configConfig := config.New(filenames...)
+	db := database.NewPostgresDB(configConfig)
+	productRepository := repository.NewProductRepository(db)
+	userRepository := repository.NewUserRepositoryPostgres(db)
+	productUsecase := usecase.NewProductUsecase(productRepository, userRepository)
+	productHandler := handler.NewProductHandler(productUsecase)
+	return productHandler
+}
+
 // injector.go:
 
 var userSet = wire.NewSet(repository.NewUserRepositoryPostgres, usecase.NewUserUseCase, handler.NewUserHandler)
@@ -96,3 +106,5 @@ var socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, repository
 var roleSet = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
 
 var permissionSet = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+
+var productSet = wire.NewSet(repository.NewProductRepository, usecase.NewProductUsecase, repository.NewUserRepositoryPostgres, handler.NewProductHandler)

@@ -20,6 +20,7 @@ var commentSet = wire.NewSet(repository.NewCommentRepository,repository.NewUserR
 var socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository,repository.NewUserRepositoryPostgres,usecase.NewSocialmediaUsecase,handler.NewSocialmediaHandler)
 var roleSet = wire.NewSet(repository.NewRoleRepository,usecase.NewRoleUsecase,handler.NewRoleHandler)
 var permissionSet = wire.NewSet(repository.NewPermissionRepository,usecase.NewPermissionUsecase,handler.NewPermissionHandler)
+var productSet = wire.NewSet(repository.NewProductRepository,usecase.NewProductUsecase,repository.NewUserRepositoryPostgres,handler.NewProductHandler)
 
 func InitializedUserHandler(filenames ...string) handler.UserHandler{
 	wire.Build(
@@ -77,4 +78,13 @@ func InitializedPermissionHandler(filenames ...string) handler.PermissionHandler
 		permissionSet,
 	)
 	return handler.PermissionHandler{}
+}
+
+func InitializedProductHandler(filenames ...string) handler.ProductHandler{
+	wire.Build(
+		config.New,
+		dbConfig.NewPostgresDB,
+		productSet,
+	)
+	return handler.ProductHandler{}
 }

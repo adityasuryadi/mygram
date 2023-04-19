@@ -57,6 +57,10 @@ func main() {
 	permissionHandler := InitializedPermissionHandler()
 	permissionHandler.Route(app)
 
+	// Product
+	productHandler := InitializedProductHandler()
+	productHandler.Route(app)
+
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404) // => 404 "Not Found"
