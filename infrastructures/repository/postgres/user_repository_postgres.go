@@ -30,7 +30,8 @@ func (repository *UserRepositoryImpl) Insert(user *entities.User) error{
 // GetUserByEmail implements domains.UserRepository
 func (repository *UserRepositoryImpl) GetUserByEmail(email string) (*entities.User,error) {
 	var userEntity entities.User
-	err := repository.db.Where("email",email).First(&userEntity).Error
+	// err := repository.db.Model().Where("email",email).First(&userEntity).Error
+	err := repository.db.Model(&userEntity).Preload("Roles").Where("email",email).First(&userEntity).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil,err
 	}
