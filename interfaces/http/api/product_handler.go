@@ -3,9 +3,11 @@ package handler
 import (
 	"mygram/domains"
 	"mygram/domains/model"
+	"mygram/infrastructures/security"
 	"mygram/interfaces/http/api/middleware"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func NewProductHandler(usecase domains.ProductUsecase) ProductHandler {
@@ -57,7 +59,11 @@ func (handler ProductHandler) PostProduct(ctx *fiber.Ctx) error {
 // @Router /product/{id} [GET]
 // @Security BearerAuth
 func (handler ProductHandler) GetOneProduct(ctx *fiber.Ctx) error {
-	responseCode,_,data := handler.usecase.FindProductById(ctx)
+	id := ctx.Params("id")
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
+	ctx.Locals("email",email)
+	responseCode,_,data := handler.usecase.FindProductById(ctx,id)
 	model.GetResponse(ctx,responseCode,"",data)
 	return nil
 }

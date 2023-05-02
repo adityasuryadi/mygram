@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"log"
 	"mygram/domains"
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
@@ -51,60 +52,65 @@ func (productUsecase *ProductUsecaseImpl) CreateProduct(ctx *fiber.Ctx) (string,
 	return <-responseCode,nil,nil
 }
 
-func (ProductUsecase *ProductUsecaseImpl) FindProductById(ctx *fiber.Ctx) (string,interface{},*model.ProductResponse){
+func (ProductUsecase *ProductUsecaseImpl) FindProductById(ctx *fiber.Ctx,id string) (string,interface{},*model.ProductResponse){
 	responseCode := make(chan string,1)
-	id := ctx.Params("id")
-	result,err := ProductUsecase.productRepo.FindById(id)
-	var response = &model.ProductResponse{}
-
-	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
-	email := claims["email"].(string)
-
 	
+	var response = &model.ProductResponse{}
+	
+	email:=ctx.Locals("email").(string)
 
-	// isAdmin:=false
+	isAdmin:=false
 	userResult, err := ProductUsecase.userRepo.GetUserByEmail(email)
-	// for _, role := range userResult.Roles {
-	// 	if role.Name == "admin" {
-	// 		isAdmin = true
-	// 		break
-	// 	}
-	// 	isAdmin = false
-	// }
+	for _, role := range userResult.Roles {
+		if role.Name == "admin" {
+			isAdmin = true
+			break
+		}
+		isAdmin = false
+	}
 
-	// if !isAdmin {
+	result,err:= ProductUsecase.productRepo.FindById(id)
+	if result == nil && err != nil {
+		responseCode <- "404"
+		return <-responseCode,nil,nil
+	}
+	log.Print(err)
 
-	// }
+	if !isAdmin {
+		if userResult.Id != result.UserId {
+			responseCode <- "403"
+			return <-responseCode,nil,nil
+		}else{
+			if err == nil && result != nil {
+				response = &model.ProductResponse{
+					Id:             result.Id,
+					Name:           result.Name,
+					Stock: 			response.Stock,
+					UserId: result.UserId,
+					CreatedAt:      result.CreatedAt,
+					UpdatedAt:      result.UpdatedAt,
+				}
+				responseCode<-"200"
+				return <-responseCode,nil,response
+			}
+			responseCode <- "404"
+			response = nil
+			return <-responseCode,nil,nil
+		}
+	}
+
 
 	if result.UserId != userResult.Id {
 		responseCode <- "403"
 		return <-responseCode,nil,nil
 	}
 
-	if err != nil {
+	if err != nil && result == nil {
 		responseCode <- "500"
 		return <-responseCode,nil,nil
 	}
-	// can,userId:=helper.Can(email,"photo.list")
-	// if !can || userId != result.UserId {
-	// 	responseCode <- "403"
-	// 	return <-responseCode,nil,nil
-	// }
-
-
-	if result == nil && err == nil {
-		responseCode <- "404"
-		response = nil
-	}
-
-	if err != nil && result == nil {
-		responseCode <- "500"
-		response = nil
-	}
 
 	if err == nil && result != nil {
-
-		responseCode <- "200"
 		response = &model.ProductResponse{
 			Id:             result.Id,
 			Name:           result.Name,
@@ -113,7 +119,10 @@ func (ProductUsecase *ProductUsecaseImpl) FindProductById(ctx *fiber.Ctx) (strin
 			CreatedAt:      result.CreatedAt,
 			UpdatedAt:      result.UpdatedAt,
 		}
+		responseCode<-"200"
+		return <-responseCode,nil,response
 	}
+	responseCode<-"200"
 	return <-responseCode,nil,response
 }
 
@@ -171,7 +180,7 @@ func (ProductUsecase *ProductUsecaseImpl) EditProduct(ctx *fiber.Ctx)(string,int
 		return <-responseCode,nil,nil
 	}
 	
-	if Product == nil && err == nil {
+	if product == nil && err == nil {
 		responseCode <- "404"
 		return <-responseCode,nil,nil
 	}

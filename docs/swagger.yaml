@@ -164,7 +164,7 @@ definitions:
       status:
         type: string
     type: object
-host: 103.54.170.135:5000
+host: adisu.my.id
 info:
   contact:
     email: fiber@swagger.io

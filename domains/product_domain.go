@@ -16,7 +16,7 @@ type ProductRepository interface {
 
 type ProductUsecase interface {
 	CreateProduct(ctx *fiber.Ctx) (string,interface{},*model.ProductResponse)
-	FindProductById(ctx *fiber.Ctx)(string,interface{},*model.ProductResponse)
+	FindProductById(ctx *fiber.Ctx,id string)(string,interface{},*model.ProductResponse)
 	EditProduct(ctx *fiber.Ctx)(string,interface{},*model.ProductResponse)
 	DeleteProduct(ctx *fiber.Ctx) (string,interface{},*model.ProductResponse)
 }
