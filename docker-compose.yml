@@ -17,9 +17,9 @@ services:
     networks:
       - blog_network
 
-###=======================
-### POSTGRES SERVICE
-###======================
+  ###=======================
+  ### POSTGRES SERVICE
+  ###======================
   postgres:
     build:
       dockerfile: postgres.Dockerfile
@@ -34,11 +34,11 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-### ===================
-### SWAGGER SERVICE
-### ===================
+  ### ===================
+  ### SWAGGER SERVICE
+  ### ===================
   doc:
-    build: 
+    build:
       context: .
       dockerfile: swagger.Dockerfile
     container_name: swagger_service
@@ -52,13 +52,25 @@ services:
     networks:
       - blog_network
 
+  ### ===================
+  ### REDIS SERVICE
+  ### ===================
+  redis:
+    build:
+      context: .
+      dockerfile: redis.Dockerfile
+    container_name: redis_service
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - blog_network
+
 networks:
   blog_network:
     driver: bridge
-    external:
-      true
+    external: true
 volumes:
   pgdata:
-    
-
-      

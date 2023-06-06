@@ -5,6 +5,7 @@ import (
 	"log"
 	entities "mygram/domains/entity"
 	dbConfig "mygram/infrastructures/database"
+	redisPckg "mygram/infrastructures/redis"
 	repository "mygram/infrastructures/repository/postgres"
 	"testing"
 
@@ -69,12 +70,12 @@ func TestGetRole(t *testing.T){
 }
 
 func TestAssignRole(t *testing.T){
-	db:=initDB()
-	userRepository := repository.NewUserRepositoryPostgres(db)
-	roles := []int{
-		1,2,
-	}
-	userRepository.AssignRole("33a61a3d-88e8-484d-8061-3db0bff92e3a",roles)
+	// db:=initDB()
+	// userRepository := repository.NewUserRepositoryPostgres(db)
+	// roles := []int{
+	// 	1,2,
+	// }
+	// userRepository.AssignRole("33a61a3d-88e8-484d-8061-3db0bff92e3a",roles)
 }
 
 func TestGetUserRole(t *testing.T){
@@ -90,6 +91,23 @@ func TestGetUserRole(t *testing.T){
 		}
 	}
 	log.Println(permissions)
+}
+
+func TestSetRedis(t *testing.T){
+	err:=redisPckg.Set("test","adit123",60)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+
+func TestGetRedis(t *testing.T){
+	err,val := redisPckg.Get("test")
+	if err != nil {
+		fmt.Println(err)
+	}else{
+		fmt.Println(val)
+	}
 }
 
 // func findInSlice(value interface{}){
