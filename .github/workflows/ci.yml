@@ -17,7 +17,7 @@ jobs:
           cache: false
 
       - name: Install dependencies
-        run: go mod init
+        run: go mod tidy
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
