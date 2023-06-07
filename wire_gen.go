@@ -28,8 +28,9 @@ func InitializeApp(filenames ...string) *fiber.App {
 	configConfig := config.New(filenames...)
 	db := database.NewPostgresDB(configConfig)
 	userRepository := repository.NewUserRepositoryPostgres(db)
+	userTokenRepository := repository.NewUserTokenRepository(db)
 	validationValidation := validation.NewValidation(db)
-	userUsecase := usecase.NewUserUseCase(userRepository, validationValidation)
+	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation)
 	userHandler := handler.NewUserHandler(userUsecase)
 	photoRepository := repository.NewPhotoRepository(db)
 	photoUsecase := usecase.NewPhotoUsecase(photoRepository, userRepository, validationValidation)
@@ -53,7 +54,7 @@ func InitializeApp(filenames ...string) *fiber.App {
 // injector.go:
 
 var (
-	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, usecase.NewUserUseCase, handler.NewUserHandler)
+	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, repository.NewUserTokenRepository, usecase.NewUserUseCase, handler.NewUserHandler)
 	photoSet       = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
 	commentSet     = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
 	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
