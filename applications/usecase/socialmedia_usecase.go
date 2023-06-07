@@ -12,80 +12,80 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func NewSocialmediaUsecase(socialmediaRepo domains.SocialmediaRepository,userRepo domains.UserRepository,validate validation.Validation ) domains.SocialmediaUsecase {
+func NewSocialmediaUsecase(socialmediaRepo domains.SocialmediaRepository, userRepo domains.UserRepository, validate validation.Validation) domains.SocialmediaUsecase {
 	return &SocialmediaUsecaseImpl{
-		socialmediaRepo:  socialmediaRepo,
-		userRepo: userRepo,
-		validate: validate,
+		socialmediaRepo: socialmediaRepo,
+		userRepo:        userRepo,
+		validate:        validate,
 	}
 }
 
 type SocialmediaUsecaseImpl struct {
 	socialmediaRepo domains.SocialmediaRepository
-	userRepo domains.UserRepository
-	validate validation.Validation
+	userRepo        domains.UserRepository
+	validate        validation.Validation
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) CreateSocialmedia(request model.CreateSocialmediaRequest) (string,interface{},*model.SocialmediaResponse){
-	
+func (socialmediaUsecase *SocialmediaUsecaseImpl) CreateSocialmedia(request model.CreateSocialmediaRequest) (string, interface{}, *model.SocialmediaResponse) {
+
 	responseCode := make(chan string, 1)
-	err:=socialmediaUsecase.validate.ValidateRequest(request)
+	err := socialmediaUsecase.validate.ValidateRequest(request)
 	if err != nil {
 		responseCode <- "400"
-		return <-responseCode,err,nil
+		return <-responseCode, err, nil
 	}
 
-	result,err := socialmediaUsecase.userRepo.GetUserByEmail(request.Email)
+	result, err := socialmediaUsecase.userRepo.GetUserByEmail(request.Email)
 
 	if err != nil {
 		responseCode <- "403"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
 
 	socialmedia := entities.Socialmedia{
-		Name: request.Name,
+		Name:           request.Name,
 		SocialMediaUrl: request.SocialmediaUrl,
-		UserId: result.Id,
+		UserId:         result.Id,
 	}
 
 	err = socialmediaUsecase.socialmediaRepo.Insert(socialmedia)
-	
+
 	if err != nil {
 		responseCode <- "500"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
-	
+
 	responseCode <- "200"
-	return <-responseCode,nil,nil
+	return <-responseCode, nil, nil
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) ListSocialmedia()(string,interface{},[]*model.SocialmediaResponse){
-	responseCode := make(chan string,1)
+func (socialmediaUsecase *SocialmediaUsecaseImpl) ListSocialmedia() (string, interface{}, []*model.SocialmediaResponse) {
+	responseCode := make(chan string, 1)
 	var responses []*model.SocialmediaResponse
-	result,err := socialmediaUsecase.socialmediaRepo.GetAll()
+	result, err := socialmediaUsecase.socialmediaRepo.GetAll()
 	if err != nil {
 		responseCode <- "500"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
 
 	responseCode <- "200"
 
 	for _, v := range result {
 		responses = append(responses, &model.SocialmediaResponse{
-			Id: v.Id,
-			Name: v.Name,
+			Id:             v.Id,
+			Name:           v.Name,
 			SocialmediaUrl: v.SocialMediaUrl,
-			CreatedAt: v.CreatedAt,
-			UpdatedAt: v.UpdatedAt,
+			CreatedAt:      v.CreatedAt,
+			UpdatedAt:      v.UpdatedAt,
 		})
 	}
-	
-	return <-responseCode,nil,responses
+
+	return <-responseCode, nil, responses
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) FindSocialmediaById(id string) (string,interface{},*model.SocialmediaResponse){
-	responseCode := make(chan string,1)
-	result,err := socialmediaUsecase.socialmediaRepo.FindById(id)
+func (socialmediaUsecase *SocialmediaUsecaseImpl) FindSocialmediaById(id string) (string, interface{}, *model.SocialmediaResponse) {
+	responseCode := make(chan string, 1)
+	result, err := socialmediaUsecase.socialmediaRepo.FindById(id)
 	var response = &model.SocialmediaResponse{}
 
 	if result == nil && err == nil {
@@ -109,75 +109,74 @@ func (socialmediaUsecase *SocialmediaUsecaseImpl) FindSocialmediaById(id string)
 			UpdatedAt:      result.UpdatedAt,
 		}
 	}
-	return <-responseCode,nil,response
+	return <-responseCode, nil, response
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(ctx *fiber.Ctx)(string,interface{},*model.SocialmediaResponse){
-	responseCode := make(chan string,1)
+func (socialmediaUsecase *SocialmediaUsecaseImpl) EditSocialmedia(ctx *fiber.Ctx) (string, interface{}, *model.SocialmediaResponse) {
+	responseCode := make(chan string, 1)
 	var request model.CreateSocialmediaRequest
-	id:=ctx.Params("id")
+	id := ctx.Params("id")
 
 	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
 	email := claims["email"].(string)
-	
 
-	socialmedia,err := socialmediaUsecase.socialmediaRepo.FindById(id)
-	can,userId:=helper.Can(email,"socialmedia.edit")
+	socialmedia, err := socialmediaUsecase.socialmediaRepo.FindById(id)
+	can, userId := helper.Can(email, "socialmedia.edit")
 	if !can || userId != socialmedia.UserId {
 		responseCode <- "403"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
-	
+
 	if socialmedia == nil && err == nil {
 		responseCode <- "404"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
 
 	validationErr := socialmediaUsecase.validate.ValidateRequest(request)
 	if validationErr != nil {
-		responseCode<-"400"
-		return <-responseCode,validationErr,nil
+		responseCode <- "400"
+		return <-responseCode, validationErr, nil
 	}
 
 	socialmedia.Name = request.Name
 	socialmedia.SocialMediaUrl = request.SocialmediaUrl
-	entities,err := socialmediaUsecase.socialmediaRepo.Update(socialmedia)
-	
-	response:= model.SocialmediaResponse{
-		Id:entities.Id,
-		Name: entities.Name,
+	entities, _ := socialmediaUsecase.socialmediaRepo.Update(socialmedia)
+
+	response := model.SocialmediaResponse{
+		Id:             entities.Id,
+		Name:           entities.Name,
 		SocialmediaUrl: entities.SocialMediaUrl,
-		CreatedAt: entities.CreatedAt,
-		UpdatedAt: entities.UpdatedAt,
+		CreatedAt:      entities.CreatedAt,
+		UpdatedAt:      entities.UpdatedAt,
 	}
-	responseCode<-"200"
-	return <-responseCode,nil,&response
+	responseCode <- "200"
+	return <-responseCode, nil, &response
 }
 
-func (socialmediaUsecase *SocialmediaUsecaseImpl) DeleteSocialmedia(ctx *fiber.Ctx) (string,interface{},*model.SocialmediaResponse){
-	responseCode := make(chan string,1)
+func (socialmediaUsecase *SocialmediaUsecaseImpl) DeleteSocialmedia(ctx *fiber.Ctx) (string, interface{}, *model.SocialmediaResponse) {
+	responseCode := make(chan string, 1)
 	id := ctx.Params("id")
-	
+
 	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
 	email := claims["email"].(string)
 
-	socialmedia,err := socialmediaUsecase.socialmediaRepo.FindById(id)
+	socialmedia, err := socialmediaUsecase.socialmediaRepo.FindById(id)
 
-	can,userId:=helper.Can(email,"socialmedia.delete")
+	can, userId := helper.Can(email, "socialmedia.delete")
 	if !can || userId != socialmedia.UserId {
 		responseCode <- "403"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
 
 	if socialmedia == nil && err == nil {
 		responseCode <- "404"
-		return <-responseCode,nil,nil
+		return <-responseCode, nil, nil
 	}
 	err = socialmediaUsecase.socialmediaRepo.Delete(id)
 	if err != nil {
 		responseCode <- "500"
-	}else{
-		responseCode<-"200"	
-	}	
-	return <-responseCode,nil,nil
+	} else {
+		responseCode <- "200"
+	}
+	return <-responseCode, nil, nil
 }
