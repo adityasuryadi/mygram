@@ -31,14 +31,8 @@ func NewApp() *fiber.App {
 // @name Authorization
 
 func main() {
-	// app := InitializeApp()
+	app := InitializeApp()
 	// Start App
-	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404) // => 404 "Not Found"
