@@ -52,17 +52,14 @@ func InitializeApp(filenames ...string) *fiber.App {
 
 // injector.go:
 
-var userSet = wire.NewSet(repository.NewUserRepositoryPostgres, usecase.NewUserUseCase, handler.NewUserHandler)
-
-var photoSet = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
-
-var commentSet = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
-
-var socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
-
-var roleSet = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
-
-var permissionSet = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+var (
+	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, usecase.NewUserUseCase, handler.NewUserHandler)
+	photoSet       = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
+	commentSet     = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
+	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
+	roleSet        = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
+	permissionSet  = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+)
 
 func NewServer(
 	userHandler handler.UserHandler,
