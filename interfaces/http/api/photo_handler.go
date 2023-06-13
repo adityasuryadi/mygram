@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"mygram/domains"
 	"mygram/domains/model"
 	"mygram/infrastructures/helper"
@@ -20,14 +22,14 @@ type PhotoHandler struct {
 	usecase domains.PhotoUsecase
 }
 
-func (handler PhotoHandler) Route(app *fiber.App){	
+func (handler PhotoHandler) Route(app *fiber.App) {
 	// auth
-	photo:=app.Group("photo",middleware.Verify())
-	photo.Post("/",handler.PostPhoto)	
-	photo.Get("/",handler.ListPhoto)
-	photo.Get("/:id",handler.GetPhoto)
-	photo.Put("/:id",handler.UpdatePhoto)
-	photo.Delete("/:id",handler.DeletePhoto)
+	photo := app.Group("photo", middleware.Verify())
+	photo.Post("/", handler.PostPhoto)
+	photo.Get("/", handler.ListPhoto)
+	photo.Get("/:id", handler.GetPhoto)
+	photo.Put("/:id", handler.UpdatePhoto)
+	photo.Delete("/:id", handler.DeletePhoto)
 }
 
 // PostPhoto godoc
@@ -48,23 +50,24 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
+	request.Email = email
+	fmt.Println(email)
+	can, _ := helper.Can(email, "photo.create")
 
-	can,_:=helper.Can(email,"photo.create")
-	
 	if !can {
-		model.ForbiddenResponse(ctx,"FORBIDDEN",nil)
+		model.ForbiddenResponse(ctx, "FORBIDDEN", nil)
 		return nil
 	}
-	
+
 	// request.Email = email
 
-	result,errCode := handler.usecase.CreatePhoto(request)
-	model.GetResponse(ctx,errCode,"",result)
+	result, errCode := handler.usecase.CreatePhoto(request)
+	println(result)
+	model.GetResponse(ctx, errCode, "", result)
 	return nil
 }
 
-
-// Registeruser List Photo 
+// Registeruser List Photo
 // @Summary List Photo
 // @Description List Photo
 // @Tags photo
@@ -75,14 +78,13 @@ func (handler PhotoHandler) PostPhoto(ctx *fiber.Ctx) error {
 // @Failure 500 {string} model.WebResponse{code=500}
 // @Router /photo [GET]
 // @Security BearerAuth
-func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
-	res,errCode := handler.usecase.FindAll()
-	model.GetResponse(ctx,errCode,"",res)
+func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error {
+	res, errCode := handler.usecase.FindAll()
+	model.GetResponse(ctx, errCode, "", res)
 	return nil
 }
 
-
-// Registeruser List Photo 
+// Registeruser List Photo
 // @Summary List Photo
 // @Description List Photo
 // @Tags photo
@@ -95,15 +97,15 @@ func (handler PhotoHandler) ListPhoto(ctx *fiber.Ctx) error{
 // @Security BearerAuth
 func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	
-	res,responseCode := handler.usecase.GetPhotoById(ctx,id)
 
-	model.GetResponse(ctx,responseCode,"",res)
+	res, responseCode := handler.usecase.GetPhotoById(ctx, id)
+
+	model.GetResponse(ctx, responseCode, "", res)
 
 	return nil
 }
 
-// Registeruser Edit Photo 
+// Registeruser Edit Photo
 // @Summary Edit Photo
 // @Description Edit Photo
 // @Tags photo
@@ -117,8 +119,8 @@ func (handler PhotoHandler) GetPhoto(ctx *fiber.Ctx) error {
 // @Router /photo/id [PUT]
 // @Security BearerAuth
 func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
-	result,errCode := handler.usecase.EditPhoto(ctx)
-	model.GetResponse(ctx,errCode,"",result)
+	result, errCode := handler.usecase.EditPhoto(ctx)
+	model.GetResponse(ctx, errCode, "", result)
 	return nil
 }
 
@@ -136,6 +138,6 @@ func (handler PhotoHandler) UpdatePhoto(ctx *fiber.Ctx) error {
 // @Security BearerAuth
 func (handler PhotoHandler) DeletePhoto(ctx *fiber.Ctx) error {
 	errCode := handler.usecase.DeletePhoto(ctx)
-	model.GetResponse(ctx,errCode,"",nil)
+	model.GetResponse(ctx, errCode, "", nil)
 	return nil
 }

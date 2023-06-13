@@ -3,6 +3,7 @@ package usecase
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	domains "mygram/domains"
 	entities "mygram/domains/entity"
@@ -12,10 +13,13 @@ import (
 	"mygram/infrastructures/validation"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 )
 
-func NewUserUseCase(repository domains.UserRepository, userTokenRepo domains.UserTokenRepository, validate validation.Validation) domains.UserUsecase {
+func NewUserUseCase(repository domains.UserRepository, userTokenRepo domains.UserTokenRepository, validate validation.Validation, database *gorm.DB) domains.UserUsecase {
 	return &UserUseCaseImpl{
+		db:            database,
 		repository:    repository,
 		userTokenRepo: userTokenRepo,
 		Validate:      validate,
@@ -23,6 +27,7 @@ func NewUserUseCase(repository domains.UserRepository, userTokenRepo domains.Use
 }
 
 type UserUseCaseImpl struct {
+	db            *gorm.DB
 	repository    domains.UserRepository
 	userTokenRepo domains.UserTokenRepository
 	Validate      validation.Validation
@@ -56,6 +61,14 @@ func (usecase *UserUseCaseImpl) FetchUserLogin(request model.LoginUserRequest) (
 	email := request.Email
 	result, err := usecase.repository.GetUserByEmail(email)
 
+	now := time.Now()
+	dateDiff := now.Sub(result.UserToken.ExpiredAt)
+
+	// check if has user_token and not expired
+	if !reflect.ValueOf(result.UserToken).IsZero() && dateDiff < 0 {
+		return result.UserToken.Token, "200"
+	}
+
 	errorCode := make(chan string, 1)
 	var token string
 	token = ""
@@ -74,8 +87,22 @@ func (usecase *UserUseCaseImpl) FetchUserLogin(request model.LoginUserRequest) (
 			errorCode <- "200"
 		}
 	}
+
 	// store token into user token
-	usecase.userTokenRepo.InsertToken(result, token)
+
+	tx := usecase.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	err = usecase.userTokenRepo.InsertTokenWithTx(tx, result, token)
+	if err != nil {
+		errorCode <- "404"
+	}
+
+	tx.Commit()
 
 	return token, <-errorCode
 }
@@ -94,4 +121,18 @@ func (usecase *UserUseCaseImpl) UpdateUserRole(ctx *fiber.Ctx) (string, interfac
 	responseCode <- "200"
 	usecase.repository.AssignRole(id, roles)
 	return <-responseCode, nil, nil
+}
+
+func (usecase *UserUseCaseImpl) Logout(ctx *fiber.Ctx) error {
+	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
+	email := claims["email"].(string)
+
+	user, err := usecase.repository.GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	usecase.userTokenRepo.RemoveToken(user.Id.String())
+
+	return nil
 }

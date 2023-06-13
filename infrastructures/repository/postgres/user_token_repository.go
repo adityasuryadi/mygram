@@ -19,15 +19,28 @@ type UserTokenRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func (repository *UserTokenRepositoryImpl) InsertToken(user *entities.User, token string) {
+// InsertTokenInsertTokenWithTx implements domains.UserTokenRepository
+func (repository *UserTokenRepositoryImpl) InsertTokenWithTx(tx *gorm.DB, user *entities.User, token string) error {
 	userToken := &entities.UserToken{
 		UserId:    user.Id,
 		Token:     token,
 		CreatedAt: time.Now(),
 		ExpiredAt: time.Now().Add(time.Hour * 72),
 	}
-	repository.db.Create(userToken)
+
+	err := tx.Create(userToken).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (repository *UserTokenRepositoryImpl) RemoveToken() {
+func (repository *UserTokenRepositoryImpl) RemoveToken(userId string) error {
+	var userToken entities.UserToken
+	err := repository.db.Unscoped().Where("user_id = ?", userId).Delete(&userToken).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
