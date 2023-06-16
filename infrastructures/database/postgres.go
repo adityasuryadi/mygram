@@ -1,9 +1,10 @@
 package database
 
 import (
+	"time"
+
 	"mygram/commons/exceptions"
 	config "mygram/infrastructures"
-	"time"
 
 	customlog "mygram/infrastructures/log"
 
@@ -19,17 +20,15 @@ func NewPostgresDB(configuration config.Config) *gorm.DB {
 	port := configuration.Get("POSTGRE_PORT")
 	db_name := configuration.Get("POSTGRE_DB_NAME")
 
-
 	newLogger := logger.New(
 		customlog.NewLog(),
 		logger.Config{
-		  SlowThreshold:              time.Second,   // Slow SQL threshold
-		  LogLevel:                   logger.Error, // Log level
-		  IgnoreRecordNotFoundError: true,           // Ignore ErrRecordNotFound error for logger
-		  Colorful:                  false,          // Disable color
+			SlowThreshold:             time.Second,  // Slow SQL threshold
+			LogLevel:                  logger.Error, // Log level
+			IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,        // Disable color
 		},
-	  )
-	  
+	)
 
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + db_name + " port=" + port + " sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -50,13 +49,13 @@ func NewTestPostgresDB() *gorm.DB {
 	newLogger := logger.New(
 		customlog.NewLog(),
 		logger.Config{
-		  SlowThreshold:              time.Second,   // Slow SQL threshold
-		  LogLevel:                   logger.Error, // Log level
-		  IgnoreRecordNotFoundError: true,           // Ignore ErrRecordNotFound error for logger
-		  Colorful:                  false,          // Disable color
+			SlowThreshold:             time.Second,  // Slow SQL threshold
+			LogLevel:                  logger.Error, // Log level
+			IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,        // Disable color
 		},
-	  )
-	  
+	)
+
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + db_name + " port=" + port + " sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: newLogger,

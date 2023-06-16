@@ -30,7 +30,7 @@ func InitializeApp(filenames ...string) *fiber.App {
 	userRepository := repository.NewUserRepositoryPostgres(db)
 	userTokenRepository := repository.NewUserTokenRepository(db)
 	validationValidation := validation.NewValidation(db)
-	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation)
+	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation, db)
 	userHandler := handler.NewUserHandler(userUsecase)
 	photoRepository := repository.NewPhotoRepository(db)
 	photoUsecase := usecase.NewPhotoUsecase(photoRepository, userRepository, validationValidation)

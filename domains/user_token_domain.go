@@ -1,8 +1,12 @@
 package domains
 
-import entities "mygram/domains/entity"
+import (
+	entities "mygram/domains/entity"
+
+	"gorm.io/gorm"
+)
 
 type UserTokenRepository interface {
-	InsertToken(user *entities.User, token string)
-	RemoveToken()
+	InsertTokenWithTx(tx *gorm.DB, user *entities.User, token string) error
+	RemoveToken(userId string) error
 }
