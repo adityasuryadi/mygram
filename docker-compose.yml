@@ -18,7 +18,7 @@ services:
       - blog_network
 
   ###=======================
-  ### POSTGRES SERVICE
+  ### POSTGRES SERVICE MASTER
   ###======================
   postgres:
     build:
@@ -34,6 +34,31 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-master/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./docker/postgres-master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - pgdata_slave:/tmp/postgresslave
+      # - ./docker/postgres-master/postgresql.auto.conf:/tmp/postgresslave/postgresql.auto.conf
+
+  ##=======================
+  ## POSTGRES SERVICE SLAVE
+  ##======================
+  postgres-slave:
+    build:
+      dockerfile: postgres.Dockerfile
+      context: .
+    container_name: postgres_service_slave
+    ports:
+      - 5434:5432
+    networks:
+      - blog_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata_slave:/var/lib/postgresql/data
+      - ./docker/postgres-slave/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./docker/postgres-slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+
   ### ===================
   ### SWAGGER SERVICE
   ### ===================
@@ -74,3 +99,4 @@ networks:
     external: true
 volumes:
   pgdata:
+  pgdata_slave:

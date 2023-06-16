@@ -101,6 +101,20 @@ func (handler UserHandler) Login(ctx *fiber.Ctx) error {
 	return nil
 }
 
+/*
+Logout Handler
+*/
+
+// LoginuserLogout User
+// @Summary Logout user
+// @Description Logout user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.WebResponse{}
+// @Failure 400 {object} model.WebResponse{}
+// @Failure 500 {object} model.WebResponse{}
+// @Router /logout [post]
 func (handler UserHandler) Logout(ctx *fiber.Ctx) error {
 	err := handler.UserUsecase.Logout(ctx)
 	if err != nil {
