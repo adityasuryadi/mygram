@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/plugin/dbresolver"
 )
 
 func NewPostgresDB(configuration config.Config) *gorm.DB {
@@ -19,6 +20,8 @@ func NewPostgresDB(configuration config.Config) *gorm.DB {
 	password := configuration.Get("POSTGRE_PASSWORD")
 	port := configuration.Get("POSTGRE_PORT")
 	db_name := configuration.Get("POSTGRE_DB_NAME")
+
+	replicaPort := "5434"
 
 	newLogger := logger.New(
 		customlog.NewLog(),
@@ -31,9 +34,17 @@ func NewPostgresDB(configuration config.Config) *gorm.DB {
 	)
 
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + db_name + " port=" + port + " sslmode=disable TimeZone=UTC"
+	dsnReplica := "host=" + host + " user=" + user + " password=" + password + " dbname=" + db_name + " port=" + replicaPort + " sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
+
+	// implement db resolver
+	db.Use(dbresolver.Register(dbresolver.Config{
+		Sources:  []gorm.Dialector{postgres.Open(dsn)},
+		Replicas: []gorm.Dialector{postgres.Open(dsnReplica)},
+		Policy:   dbresolver.RandomPolicy{},
+	}))
 	exceptions.PanicIfNeeded(err)
 
 	return db
