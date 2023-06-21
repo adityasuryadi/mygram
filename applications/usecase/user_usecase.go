@@ -3,12 +3,14 @@ package usecase
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	domains "mygram/domains"
 	entities "mygram/domains/entity"
 	userEntities "mygram/domains/entity"
 	"mygram/domains/model"
+	"mygram/infrastructures/mail"
 	"mygram/infrastructures/security"
 	"mygram/infrastructures/validation"
 
@@ -17,12 +19,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewUserUseCase(repository domains.UserRepository, userTokenRepo domains.UserTokenRepository, validate validation.Validation, database *gorm.DB) domains.UserUsecase {
+var mtx sync.Mutex
+
+func NewUserUseCase(repository domains.UserRepository, userTokenRepo domains.UserTokenRepository, validate validation.Validation, database *gorm.DB, mailService mail.Mail) domains.UserUsecase {
 	return &UserUseCaseImpl{
 		db:            database,
 		repository:    repository,
 		userTokenRepo: userTokenRepo,
 		Validate:      validate,
+		MailService:   mailService,
 	}
 }
 
@@ -31,6 +36,7 @@ type UserUseCaseImpl struct {
 	repository    domains.UserRepository
 	userTokenRepo domains.UserTokenRepository
 	Validate      validation.Validation
+	MailService   mail.Mail
 }
 
 // RegisterUser implements domains.UserUsecase
@@ -54,6 +60,12 @@ func (usecase *UserUseCaseImpl) RegisterUser(request model.RegisterUserRequest) 
 	if err != nil {
 		return "500", nil
 	}
+
+	go func() {
+		// sent mail
+		usecase.MailService.SendMail(request.Email, "Hello <h1>"+request.Username+"</h1> you success register!")
+	}()
+
 	return "200", nil
 }
 

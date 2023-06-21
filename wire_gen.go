@@ -13,6 +13,7 @@ import (
 	"mygram/commons/exceptions"
 	"mygram/infrastructures"
 	"mygram/infrastructures/database"
+	"mygram/infrastructures/mail"
 	"mygram/infrastructures/repository/postgres"
 	"mygram/infrastructures/validation"
 	"mygram/interfaces/http/api"
@@ -30,7 +31,8 @@ func InitializeApp(filenames ...string) *fiber.App {
 	userRepository := repository.NewUserRepositoryPostgres(db)
 	userTokenRepository := repository.NewUserTokenRepository(db)
 	validationValidation := validation.NewValidation(db)
-	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation, db)
+	mailMail := mail.NewMailService(configConfig)
+	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation, db, mailMail)
 	userHandler := handler.NewUserHandler(userUsecase)
 	photoRepository := repository.NewPhotoRepository(db)
 	photoUsecase := usecase.NewPhotoUsecase(photoRepository, userRepository, validationValidation)

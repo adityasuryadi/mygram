@@ -8,6 +8,7 @@ import (
 	"mygram/commons/exceptions"
 	config "mygram/infrastructures"
 	dbConfig "mygram/infrastructures/database"
+	mailConfig "mygram/infrastructures/mail"
 	repository "mygram/infrastructures/repository/postgres"
 	"mygram/infrastructures/validation"
 	handler "mygram/interfaces/http/api"
@@ -17,7 +18,7 @@ import (
 )
 
 var (
-	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, repository.NewUserTokenRepository, dbConfig.NewPostgresDB, usecase.NewUserUseCase, handler.NewUserHandler)
+	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, repository.NewUserTokenRepository, usecase.NewUserUseCase, handler.NewUserHandler)
 	photoSet       = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
 	commentSet     = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
 	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
@@ -31,6 +32,7 @@ func InitializeApp(filenames ...string) *fiber.App {
 		config.New,
 		dbConfig.NewPostgresDB,
 		validation.NewValidation,
+		mailConfig.NewMailService,
 		userSet,
 		photoSet,
 		commentSet,
