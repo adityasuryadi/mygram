@@ -2,11 +2,12 @@ package test_usecase
 
 import (
 	"fmt"
+	"testing"
+
 	"mygram/applications/usecase"
 	"mygram/domains/model"
 	mock_repository "mygram/infrastructures/repository/postgres/mock"
 	"mygram/infrastructures/validation"
-	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/mock"
@@ -14,11 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestGetUserBYEmail(t *testing.T){
-	var userRepository = &mock_repository.UserRepositoryMock{
+func TestGetUserBYEmail(t *testing.T) {
+	userRepository := &mock_repository.UserRepositoryMock{
 		Mock: mock.Mock{},
 	}
-	
 
 	db, _, err := sqlmock.New()
 	if err != nil {
@@ -26,18 +26,16 @@ func TestGetUserBYEmail(t *testing.T){
 		fmt.Println(err)
 	}
 
-	gormDB,err := gorm.Open(postgres.New(postgres.Config{
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: db,
-	}),&gorm.Config{})
-
+	}), &gorm.Config{})
 	if err != nil {
-        t.Fatalf("error opening GORM database: %v", err)
-    }
+		t.Fatalf("error opening GORM database: %v", err)
+	}
 
-	validation:= validation.NewValidation(gormDB)
+	validation := validation.NewValidation(gormDB)
 
-	userUsecase := usecase.NewUserUseCase(userRepository,validation)
-	userRepository.Mock.On("GetUserByEmail","adit@mail.com").Return(nil)
+	userUsecase := usecase.NewUserUseCase(userRepository, validation)
+	userRepository.Mock.On("GetUserByEmail", "adit@mail.com").Return(nil)
 	userUsecase.RegisterUser(model.RegisterUserRequest{})
-
 }

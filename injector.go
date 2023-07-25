@@ -5,86 +5,60 @@ package main
 
 import (
 	"mygram/applications/usecase"
+	"mygram/commons/exceptions"
 	config "mygram/infrastructures"
 	dbConfig "mygram/infrastructures/database"
 	repository "mygram/infrastructures/repository/postgres"
 	"mygram/infrastructures/validation"
 	handler "mygram/interfaces/http/api"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/wire"
 )
 
-var userSet = wire.NewSet(repository.NewUserRepositoryPostgres,usecase.NewUserUseCase,handler.NewUserHandler)
-var photoSet = wire.NewSet(repository.NewPhotoRepository,repository.NewUserRepositoryPostgres,usecase.NewPhotoUsecase,handler.NewPhotoHandler)
-var commentSet = wire.NewSet(repository.NewCommentRepository,repository.NewUserRepositoryPostgres,usecase.NewCommmentUsecase,handler.NewCommentHandler)
-var socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository,repository.NewUserRepositoryPostgres,usecase.NewSocialmediaUsecase,handler.NewSocialmediaHandler)
-var roleSet = wire.NewSet(repository.NewRoleRepository,usecase.NewRoleUsecase,handler.NewRoleHandler)
-var permissionSet = wire.NewSet(repository.NewPermissionRepository,usecase.NewPermissionUsecase,handler.NewPermissionHandler)
-var productSet = wire.NewSet(repository.NewProductRepository,usecase.NewProductUsecase,repository.NewUserRepositoryPostgres,handler.NewProductHandler)
+var (
+	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, repository.NewUserTokenRepository, usecase.NewUserUseCase, handler.NewUserHandler)
+	photoSet       = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
+	commentSet     = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
+	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
+	roleSet        = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
+	permissionSet  = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+	productSet     = wire.NewSet(repository.NewProductRepository, usecase.NewProductUsecase, handler.NewProductHandler)
+)
 
-func InitializedUserHandler(filenames ...string) handler.UserHandler{
+func InitializeApp(filenames ...string) *fiber.App {
 	wire.Build(
+		NewServer,
 		config.New,
 		dbConfig.NewPostgresDB,
 		validation.NewValidation,
 		userSet,
-	)
-	return handler.UserHandler{}
-}
-
-func InitializedPhotoHandler(filenames ...string) handler.PhotoHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
-		validation.NewValidation,
 		photoSet,
-	)
-	return handler.PhotoHandler{}
-}
-
-func InitializedCommentHandler(filenames ...string) handler.CommentHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
-		validation.NewValidation,
 		commentSet,
-	)
-	return handler.CommentHandler{}
-}
-
-func InitializedSocialmediaHandler(filenames ...string) handler.SocialMediaHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
-		validation.NewValidation,
 		socialmediaSet,
-	)
-	return handler.SocialMediaHandler{}
-}
-
-func InitializedRoleHandler(filenames ...string) handler.RoleHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
-		roleSet,
-	)
-	return handler.RoleHandler{}
-}
-
-func InitializedPermissionHandler(filenames ...string) handler.PermissionHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
 		permissionSet,
-	)
-	return handler.PermissionHandler{}
-}
-
-func InitializedProductHandler(filenames ...string) handler.ProductHandler{
-	wire.Build(
-		config.New,
-		dbConfig.NewPostgresDB,
+		roleSet,
 		productSet,
 	)
-	return handler.ProductHandler{}
+	return nil
+}
+
+func NewServer(
+	userHandler handler.UserHandler,
+	photoHandler handler.PhotoHandler,
+	commentHandler handler.CommentHandler,
+	socialmediaHandler handler.SocialMediaHandler,
+	permissionHandler handler.PermissionHandler,
+	roleHandler handler.RoleHandler,
+	productHandler handler.ProductHandler,
+) *fiber.App {
+	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
+	userHandler.Route(app)
+	photoHandler.Route(app)
+	commentHandler.Route(app)
+	socialmediaHandler.Route(app)
+	permissionHandler.Route(app)
+	roleHandler.Route(app)
+	productHandler.Route(app)
+	return app
 }

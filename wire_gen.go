@@ -7,8 +7,10 @@
 package main
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/wire"
 	"mygram/applications/usecase"
+	"mygram/commons/exceptions"
 	"mygram/infrastructures"
 	"mygram/infrastructures/database"
 	"mygram/infrastructures/repository/postgres"
@@ -22,89 +24,64 @@ import (
 
 // Injectors from injector.go:
 
-func InitializedUserHandler(filenames ...string) handler.UserHandler {
+func InitializeApp(filenames ...string) *fiber.App {
 	configConfig := config.New(filenames...)
 	db := database.NewPostgresDB(configConfig)
 	userRepository := repository.NewUserRepositoryPostgres(db)
+	userTokenRepository := repository.NewUserTokenRepository(db)
 	validationValidation := validation.NewValidation(db)
-	userUsecase := usecase.NewUserUseCase(userRepository, validationValidation)
+	userUsecase := usecase.NewUserUseCase(userRepository, userTokenRepository, validationValidation, db)
 	userHandler := handler.NewUserHandler(userUsecase)
-	return userHandler
-}
-
-func InitializedPhotoHandler(filenames ...string) handler.PhotoHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
 	photoRepository := repository.NewPhotoRepository(db)
-	userRepository := repository.NewUserRepositoryPostgres(db)
-	validationValidation := validation.NewValidation(db)
 	photoUsecase := usecase.NewPhotoUsecase(photoRepository, userRepository, validationValidation)
 	photoHandler := handler.NewPhotoHandler(photoUsecase)
-	return photoHandler
-}
-
-func InitializedCommentHandler(filenames ...string) handler.CommentHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
 	commentRepository := repository.NewCommentRepository(db)
-	userRepository := repository.NewUserRepositoryPostgres(db)
-	validationValidation := validation.NewValidation(db)
 	commentUsecase := usecase.NewCommmentUsecase(commentRepository, userRepository, validationValidation)
 	commentHandler := handler.NewCommentHandler(commentUsecase)
-	return commentHandler
-}
-
-func InitializedSocialmediaHandler(filenames ...string) handler.SocialMediaHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
 	socialmediaRepository := repository.NewSocialmediaRepository(db)
-	userRepository := repository.NewUserRepositoryPostgres(db)
-	validationValidation := validation.NewValidation(db)
 	socialmediaUsecase := usecase.NewSocialmediaUsecase(socialmediaRepository, userRepository, validationValidation)
 	socialMediaHandler := handler.NewSocialmediaHandler(socialmediaUsecase)
-	return socialMediaHandler
-}
-
-func InitializedRoleHandler(filenames ...string) handler.RoleHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
-	roleRepository := repository.NewRoleRepository(db)
-	roleUsecase := usecase.NewRoleUsecase(roleRepository)
-	roleHandler := handler.NewRoleHandler(roleUsecase)
-	return roleHandler
-}
-
-func InitializedPermissionHandler(filenames ...string) handler.PermissionHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
 	permissionRepository := repository.NewPermissionRepository(db)
 	permissionUsecase := usecase.NewPermissionUsecase(permissionRepository)
 	permissionHandler := handler.NewPermissionHandler(permissionUsecase)
-	return permissionHandler
-}
-
-func InitializedProductHandler(filenames ...string) handler.ProductHandler {
-	configConfig := config.New(filenames...)
-	db := database.NewPostgresDB(configConfig)
+	roleRepository := repository.NewRoleRepository(db)
+	roleUsecase := usecase.NewRoleUsecase(roleRepository)
+	roleHandler := handler.NewRoleHandler(roleUsecase)
 	productRepository := repository.NewProductRepository(db)
-	userRepository := repository.NewUserRepositoryPostgres(db)
 	productUsecase := usecase.NewProductUsecase(productRepository, userRepository)
 	productHandler := handler.NewProductHandler(productUsecase)
-	return productHandler
+	app := NewServer(userHandler, photoHandler, commentHandler, socialMediaHandler, permissionHandler, roleHandler, productHandler)
+	return app
 }
 
 // injector.go:
 
-var userSet = wire.NewSet(repository.NewUserRepositoryPostgres, usecase.NewUserUseCase, handler.NewUserHandler)
+var (
+	userSet        = wire.NewSet(repository.NewUserRepositoryPostgres, repository.NewUserTokenRepository, usecase.NewUserUseCase, handler.NewUserHandler)
+	photoSet       = wire.NewSet(repository.NewPhotoRepository, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
+	commentSet     = wire.NewSet(repository.NewCommentRepository, usecase.NewCommmentUsecase, handler.NewCommentHandler)
+	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
+	roleSet        = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
+	permissionSet  = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+	productSet     = wire.NewSet(repository.NewProductRepository, usecase.NewProductUsecase, handler.NewProductHandler)
+)
 
-var photoSet = wire.NewSet(repository.NewPhotoRepository, repository.NewUserRepositoryPostgres, usecase.NewPhotoUsecase, handler.NewPhotoHandler)
-
-var commentSet = wire.NewSet(repository.NewCommentRepository, repository.NewUserRepositoryPostgres, usecase.NewCommmentUsecase, handler.NewCommentHandler)
-
-var socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, repository.NewUserRepositoryPostgres, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
-
-var roleSet = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
-
-var permissionSet = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
-
-var productSet = wire.NewSet(repository.NewProductRepository, usecase.NewProductUsecase, repository.NewUserRepositoryPostgres, handler.NewProductHandler)
+func NewServer(
+	userHandler handler.UserHandler,
+	photoHandler handler.PhotoHandler,
+	commentHandler handler.CommentHandler,
+	socialmediaHandler handler.SocialMediaHandler,
+	permissionHandler handler.PermissionHandler,
+	roleHandler handler.RoleHandler,
+	productHandler handler.ProductHandler,
+) *fiber.App {
+	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
+	userHandler.Route(app)
+	photoHandler.Route(app)
+	commentHandler.Route(app)
+	socialmediaHandler.Route(app)
+	permissionHandler.Route(app)
+	roleHandler.Route(app)
+	productHandler.Route(app)
+	return app
+}

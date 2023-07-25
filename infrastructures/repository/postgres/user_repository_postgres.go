@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+
 	domains "mygram/domains"
 	entities "mygram/domains/entity"
 
@@ -19,7 +20,7 @@ type UserRepositoryImpl struct {
 }
 
 // Insert implements domains.UserRepository
-func (repository *UserRepositoryImpl) Insert(user *entities.User) error{
+func (repository *UserRepositoryImpl) Insert(user *entities.User) error {
 	result := repository.db.Create(&user)
 	if result.Error != nil {
 		return result.Error
@@ -28,25 +29,23 @@ func (repository *UserRepositoryImpl) Insert(user *entities.User) error{
 }
 
 // GetUserByEmail implements domains.UserRepository
-func (repository *UserRepositoryImpl) GetUserByEmail(email string) (*entities.User,error) {
+func (repository *UserRepositoryImpl) GetUserByEmail(email string) (*entities.User, error) {
 	var userEntity entities.User
-	// err := repository.db.Model().Where("email",email).First(&userEntity).Error
-	err := repository.db.Model(&userEntity).Preload("Roles").Where("email",email).First(&userEntity).Error
+	err := repository.db.Where("email", email).Preload("UserToken").First(&userEntity).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil,err
+		return nil, err
 	}
-	return &userEntity,err	
+	return &userEntity, err
 }
 
-
-func (repository *UserRepositoryImpl) AssignRole(userId string,roles []entities.Role) error {
+func (repository *UserRepositoryImpl) AssignRole(userId string, roles []entities.Role) error {
 	var user entities.User
-	
-	tx:=repository.db.Begin()
-	err := repository.db.Where("id = ?",userId).First(&user).Error
+
+	tx := repository.db.Begin()
+	err := repository.db.Where("id = ?", userId).First(&user).Error
 	if err != nil {
 		return err
-	} 
+	}
 	tx.Model(&user).Association("Roles").Clear()
 	if err != nil {
 		tx.Rollback()
@@ -55,9 +54,8 @@ func (repository *UserRepositoryImpl) AssignRole(userId string,roles []entities.
 	if err != nil {
 		tx.Rollback()
 	}
-	if err := tx.Commit().Error; err !=  nil {
+	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 	}
 	return nil
 }
-

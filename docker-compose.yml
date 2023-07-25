@@ -17,9 +17,9 @@ services:
     networks:
       - blog_network
 
-###=======================
-### POSTGRES SERVICE
-###======================
+  ###=======================
+  ### POSTGRES SERVICE MASTER
+  ###======================
   postgres:
     build:
       dockerfile: postgres.Dockerfile
@@ -34,11 +34,36 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-### ===================
-### SWAGGER SERVICE
-### ===================
+      - ./docker/postgres-master/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./docker/postgres-master/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - pgdata_slave:/tmp/postgresslave
+      # - ./docker/postgres-master/postgresql.auto.conf:/tmp/postgresslave/postgresql.auto.conf
+
+  ##=======================
+  ## POSTGRES SERVICE SLAVE
+  ##======================
+  postgres-slave:
+    build:
+      dockerfile: postgres.Dockerfile
+      context: .
+    container_name: postgres_service_slave
+    ports:
+      - 5434:5432
+    networks:
+      - blog_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata_slave:/var/lib/postgresql/data
+      - ./docker/postgres-slave/postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./docker/postgres-slave/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+
+  ### ===================
+  ### SWAGGER SERVICE
+  ### ===================
   doc:
-    build: 
+    build:
       context: .
       dockerfile: swagger.Dockerfile
     container_name: swagger_service
@@ -52,13 +77,26 @@ services:
     networks:
       - blog_network
 
+  ### ===================
+  ### REDIS SERVICE
+  ### ===================
+  redis:
+    build:
+      context: .
+      dockerfile: redis.Dockerfile
+    container_name: redis_service
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - blog_network
+
 networks:
   blog_network:
     driver: bridge
-    external:
-      true
+    external: true
 volumes:
   pgdata:
-    
-
-      
+  pgdata_slave:

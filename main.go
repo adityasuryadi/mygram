@@ -11,8 +11,8 @@ import (
 	_ "mygram/docs"
 )
 
-func NewApp() *fiber.App{
-	app:=fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
+func NewApp() *fiber.App {
+	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
 	return app
 }
 
@@ -29,43 +29,14 @@ func NewApp() *fiber.App{
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
+
 func main() {
-	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
-	
-	// user
-	
-	userHandler := InitializedUserHandler()
-	userHandler.Route(app)
-
-	// photo
-	photoHandler := InitializedPhotoHandler()
-	photoHandler.Route(app)
-
-	// comment
-	commentHandler := InitializedCommentHandler()
-	commentHandler.Route(app)
-
-	// social media
-	socialmediaHandler:= InitializedSocialmediaHandler()
-	socialmediaHandler.Route(app)
-
-	// Role
-	roleHandler:= InitializedRoleHandler()
-	roleHandler.Route(app)
-
-	// permission
-	permissionHandler := InitializedPermissionHandler()
-	permissionHandler.Route(app)
-
-	// Product
-	productHandler := InitializedProductHandler()
-	productHandler.Route(app)
-
+	app := InitializeApp()
+	// Start App
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404) // => 404 "Not Found"
 	})
 
-	// Start App
 	app.Listen(":5000")
 }

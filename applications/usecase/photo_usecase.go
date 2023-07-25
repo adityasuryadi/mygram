@@ -2,30 +2,31 @@ package usecase
 
 import (
 	"fmt"
+	"time"
+
 	"mygram/domains"
 	entities "mygram/domains/entity"
 	"mygram/domains/model"
 	"mygram/infrastructures/helper"
 	"mygram/infrastructures/security"
 	"mygram/infrastructures/validation"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func NewPhotoUsecase(repository domains.PhotoRepository, userRepository domains.UserRepository,validate validation.Validation) domains.PhotoUsecase {
+func NewPhotoUsecase(repository domains.PhotoRepository, userRepository domains.UserRepository, validate validation.Validation) domains.PhotoUsecase {
 	return &PhotoUSecaseImpl{
 		repository:     repository,
 		UserRepository: userRepository,
-		Validate: validate,
+		Validate:       validate,
 	}
 }
 
 type PhotoUSecaseImpl struct {
 	repository     domains.PhotoRepository
 	UserRepository domains.UserRepository
-	Validate validation.Validation
+	Validate       validation.Validation
 }
 
 func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (interface{}, string) {
@@ -36,7 +37,7 @@ func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (i
 	err := usecase.Validate.ValidateRequest(request)
 	if err != nil {
 		errorCode <- "400"
-		return err,<-errorCode
+		return err, <-errorCode
 	}
 
 	userResult, err := usecase.UserRepository.GetUserByEmail(request.Email)
@@ -53,7 +54,6 @@ func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (i
 	}
 
 	result, err := usecase.repository.InsertPhoto(photo)
-
 	if err != nil {
 		errorCode <- "500"
 		response = model.CreatePhotoResponse{}
@@ -61,7 +61,6 @@ func (usecase PhotoUSecaseImpl) CreatePhoto(request model.CreatePhotoRequest) (i
 
 	if err == nil {
 		response = model.CreatePhotoResponse{
-			Id:        result.Id,
 			PhotoUrl:  result.PhotoUrl,
 			Caption:   result.Caption,
 			Title:     result.Title,
@@ -100,30 +99,30 @@ func (usecase PhotoUSecaseImpl) FindAll() ([]model.PhotoResponse, string) {
 }
 
 // GetPhotoById implements domains.PhotoUsecase
-func (usecase *PhotoUSecaseImpl) GetPhotoById(ctx *fiber.Ctx,id string) (*model.PhotoResponse, string) {
+func (usecase *PhotoUSecaseImpl) GetPhotoById(ctx *fiber.Ctx, id string) (*model.PhotoResponse, string) {
 	responseCode := make(chan string, 1)
 	result, err := usecase.repository.FindById(id)
-	var response = &model.PhotoResponse{}
+	response := &model.PhotoResponse{}
 
 	claims := security.DecodeToken(ctx.Locals("user").(*jwt.Token))
 	email := claims["email"].(string)
 
-	can,userId:=helper.Can(email,"photo.list")
+	can, userId := helper.Can(email, "photo.list")
 	if !can || userId != result.UserId {
 		responseCode <- "403"
-		return nil,<-responseCode
+		return nil, <-responseCode
 	}
 
 	if result == nil && err == nil {
 		responseCode <- "404"
 		response = nil
-		return nil,<-responseCode
+		return nil, <-responseCode
 	}
 
 	if err != nil && result == nil {
 		responseCode <- "500"
 		response = nil
-		return nil,<-responseCode
+		return nil, <-responseCode
 	}
 
 	if err == nil && result != nil {
@@ -144,28 +143,26 @@ func (usecase *PhotoUSecaseImpl) GetPhotoById(ctx *fiber.Ctx,id string) (*model.
 // EditPhoto implements domains.PhotoUsecase
 func (usecase *PhotoUSecaseImpl) EditPhoto(ctx *fiber.Ctx) (interface{}, string) {
 	errCode := make(chan string, 1)
-	var response = &model.UpdatePhotoResponse{}
+	response := &model.UpdatePhotoResponse{}
 	var request model.CreatePhotoRequest
 	ctx.BodyParser(&request)
-	id:=ctx.Params("id")
+	id := ctx.Params("id")
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
-	
-	
-	
+
 	result, err := usecase.repository.FindById(id)
 
-	can,userId:=helper.Can(email,"photo.edit")
+	can, userId := helper.Can(email, "photo.edit")
 	if !can || userId != result.UserId {
 		errCode <- "403"
-		return nil,<-errCode
+		return nil, <-errCode
 	}
-	
+
 	errValidation := usecase.Validate.ValidateRequest(request)
 	if errValidation != nil {
 		errCode <- "400"
-		return errValidation,<-errCode
+		return errValidation, <-errCode
 	}
 
 	if result == nil && err == nil {
@@ -195,19 +192,18 @@ func (usecase *PhotoUSecaseImpl) EditPhoto(ctx *fiber.Ctx) (interface{}, string)
 	return request, <-errCode
 }
 
-
 // DeletePhoto implements domains.PhotoUsecase
 func (usecase *PhotoUSecaseImpl) DeletePhoto(ctx *fiber.Ctx) string {
 	errCode := make(chan string, 1)
-	id:=ctx.Params("id")
+	id := ctx.Params("id")
 
 	user := ctx.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
-	
+
 	result, err := usecase.repository.FindById(id)
 
-	can,userId:=helper.Can(email,"photo.delete")
+	can, userId := helper.Can(email, "photo.delete")
 	if !can || userId != result.UserId {
 		errCode <- "403"
 		return <-errCode
@@ -228,7 +224,7 @@ func (usecase *PhotoUSecaseImpl) DeletePhoto(ctx *fiber.Ctx) string {
 		errCode <- "500"
 		return <-errCode
 	}
-	
+
 	errCode <- "200"
-	return <- errCode
+	return <-errCode
 }
