@@ -1,0 +1,2 @@
+time="2023-04-20T19:07:50+07:00" level=info msg="C:/Users/ADIT/Documents/DEVELOPMENT/GOLANG/src/mygram/infrastructures/database/postgres.go:35\n[error] failed to initialize database, got error failed to connect to `host=postgres user=postgres database=mygram`: hostname resolving error (lookup postgres: no such host)"
+time="2023-04-20T19:07:50+07:00" level=error msg="failed to connect to `host=postgres user=postgres database=mygram`: hostname resolving error (lookup postgres: no such host)"

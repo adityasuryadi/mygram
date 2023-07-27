@@ -72,6 +72,26 @@ func NewValidation(db *gorm.DB) Validation {
 		return total == 0
 	})
 
+	// custom validasi untuk cek image
+	validate.RegisterValidation("image_validation", func(fl validator.FieldLevel) bool {
+		mimeTypes := []string{
+			"jpg",
+			"jpeg",
+			"gif",
+			"png",
+		}
+
+		value := fl.Field()
+		var isValid bool
+		for _, v := range mimeTypes {
+			isValid = strings.ToLower(value.String()) == strings.ToLower("."+v)
+			if isValid {
+				return isValid
+			}
+		}
+		return isValid
+	})
+
 	return &ValidationImpl{
 		Validate: validate,
 	}
@@ -82,16 +102,17 @@ type ValidationImpl struct {
 }
 
 // ValidateRequest implements Validation
-func (validateImpl *ValidationImpl) ValidateRequest(request interface{}) interface{}{
+func (validateImpl *ValidationImpl) ValidateRequest(request interface{}) interface{} {
 	err := validateImpl.Validate.Struct(request)
 	if err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 
-		out := make([]ErrorMessage,len(validationErrors))
+		out := make([]ErrorMessage, len(validationErrors))
 		for i, fieldError := range validationErrors {
-			out[i] = ErrorMessage{ 
+			out[i] = ErrorMessage{
 				fieldError.Field(),
 				GetErrorMsg(fieldError),
+				getGroup(fieldError.Namespace()),
 			}
 		}
 		return out
@@ -99,3 +120,13 @@ func (validateImpl *ValidationImpl) ValidateRequest(request interface{}) interfa
 	return nil
 }
 
+func getGroup(nameSpace string) string {
+	split := strings.Split(nameSpace, ".")
+	var group string
+	lenGroup := len(split) - 1
+	group = ""
+	if lenGroup > 1 {
+		group = split[lenGroup-1]
+	}
+	return group
+}

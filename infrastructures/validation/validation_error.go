@@ -1,6 +1,8 @@
 package validation
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/go-playground/validator/v10"
+)
 
 type ValidationError struct {
 	Message string
@@ -13,6 +15,7 @@ func (validationError ValidationError) Error() string {
 type ErrorMessage struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
+	Group   string `json:"group"`
 }
 
 func GetErrorMsg(fe validator.FieldError) string {
@@ -28,7 +31,11 @@ func GetErrorMsg(fe validator.FieldError) string {
 	case "unique":
 		return "data exist"
 	case "min":
-		return "minimal "+ fe.Param() + " karakter"
+		return "minimal " + fe.Param() + " karakter"
+	case "max":
+		return "max " + fe.Param() + " Kb"
+	case "image_validation":
+		return "Harus Image"
 	}
 	return "Unknown error"
 }

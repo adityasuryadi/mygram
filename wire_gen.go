@@ -47,7 +47,10 @@ func InitializeApp(filenames ...string) *fiber.App {
 	roleRepository := repository.NewRoleRepository(db)
 	roleUsecase := usecase.NewRoleUsecase(roleRepository)
 	roleHandler := handler.NewRoleHandler(roleUsecase)
-	app := NewServer(userHandler, photoHandler, commentHandler, socialMediaHandler, permissionHandler, roleHandler)
+	productRepository := repository.NewProductRepository(db)
+	productUsecase := usecase.NewProductUsecase(productRepository, userRepository)
+	productHandler := handler.NewProductHandler(productUsecase)
+	app := NewServer(userHandler, photoHandler, commentHandler, socialMediaHandler, permissionHandler, roleHandler, productHandler)
 	return app
 }
 
@@ -60,6 +63,7 @@ var (
 	socialmediaSet = wire.NewSet(repository.NewSocialmediaRepository, usecase.NewSocialmediaUsecase, handler.NewSocialmediaHandler)
 	roleSet        = wire.NewSet(repository.NewRoleRepository, usecase.NewRoleUsecase, handler.NewRoleHandler)
 	permissionSet  = wire.NewSet(repository.NewPermissionRepository, usecase.NewPermissionUsecase, handler.NewPermissionHandler)
+	productSet     = wire.NewSet(repository.NewProductRepository, usecase.NewProductUsecase, handler.NewProductHandler)
 )
 
 func NewServer(
@@ -69,6 +73,7 @@ func NewServer(
 	socialmediaHandler handler.SocialMediaHandler,
 	permissionHandler handler.PermissionHandler,
 	roleHandler handler.RoleHandler,
+	productHandler handler.ProductHandler,
 ) *fiber.App {
 	app := fiber.New(fiber.Config{ErrorHandler: exceptions.ErrorHandler})
 	userHandler.Route(app)
@@ -77,5 +82,6 @@ func NewServer(
 	socialmediaHandler.Route(app)
 	permissionHandler.Route(app)
 	roleHandler.Route(app)
+	productHandler.Route(app)
 	return app
 }

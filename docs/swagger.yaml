@@ -75,6 +75,30 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.ProductCreateRequest:
+    properties:
+      name:
+        type: string
+      stock:
+        type: integer
+    type: object
+  model.ProductResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      stock:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
   model.RegisterUserRequest:
     properties:
       age:
@@ -518,6 +542,128 @@ paths:
       summary: Edit Photo
       tags:
       - photo
+  /product/:
+    post:
+      consumes:
+      - application/json
+      description: Register Product
+      parameters:
+      - description: Create Product
+        in: body
+        name: Product
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: Register a new Product
+      tags:
+      - Product
+  /product/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Product
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Product
+      tags:
+      - Product
+    get:
+      consumes:
+      - application/json
+      description: find Product
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ProductResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: find Product
+      tags:
+      - Product
+    put:
+      consumes:
+      - application/json
+      description: Edit Product
+      parameters:
+      - description: Update Product
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ProductResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: edit Product
+      tags:
+      - Product
   /register:
     post:
       consumes:
